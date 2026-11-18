@@ -1,0 +1,2185 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>체스 학교 — 마무리와 최적의 수</title>
+<meta name="theme-color" content="#f5efe1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="체스 학교">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="assets/icon-512.png">
+<style>
+/* ===================== 체스 학교 — styles ===================== */
+:root{
+  --bg:#f5efe1;
+  --bg-2:#efe6d3;
+  --card:#fffdf7;
+  --ink:#2f2a22;
+  --ink-soft:#5d5546;
+  --muted:#8b8171;
+  --line:#e8dec8;
+  --green:#2f6b4f;
+  --green-2:#3d8a63;
+  --green-soft:#e6f1e8;
+  --amber:#e0a33e;
+  --amber-soft:#fdf2da;
+  --red:#c2563f;
+  --red-soft:#fbe8e2;
+  --blue:#2f6f8f;
+  --radius:18px;
+  --shadow:0 6px 20px rgba(70,54,24,.10), 0 1px 2px rgba(70,54,24,.06);
+  --sq-light:#f2e3c5;
+  --sq-dark:#8fb07f;
+  --sq-light-2:#f7ecd6;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{
+  background:radial-gradient(1200px 600px at 10% -10%, #fff8e8 0%, var(--bg) 45%, var(--bg-2) 100%);
+  color:var(--ink);
+  font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  -webkit-text-size-adjust:100%;
+  -webkit-tap-highlight-color:transparent;
+  overflow:hidden;
+  overscroll-behavior:none;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;touch-action:manipulation}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;min-height:0}
+
+/* ---------- header ---------- */
+.topbar{
+  flex:0 0 auto;display:flex;align-items:center;gap:10px;
+  padding:10px 16px 6px;
+}
+.brand{display:flex;align-items:center;gap:9px;min-width:0}
+.brand .logo{width:34px;height:34px;flex:0 0 auto;border-radius:10px;background:linear-gradient(150deg,#3d8a63,#2b5d45);
+  display:grid;place-items:center;box-shadow:inset 0 -2px 0 rgba(0,0,0,.15)}
+.brand .logo svg{width:24px;height:24px}
+.brand h1{font-size:19px;margin:0;letter-spacing:-.3px;white-space:nowrap}
+.brand .sub{font-size:11.5px;color:var(--muted);margin-top:-1px}
+.spacer{flex:1 1 auto}
+.starPill{
+  display:flex;align-items:center;gap:6px;background:#fff6e2;border:1px solid #f0dcb4;
+  color:#8a6318;font-weight:700;font-size:13.5px;padding:7px 12px;border-radius:999px;white-space:nowrap;
+}
+.themeBtn{
+  display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);
+  padding:7px 11px;border-radius:999px;font-size:13px;color:var(--ink-soft);box-shadow:var(--shadow);
+}
+.themeBtn:hover{background:#fffdf3}
+
+/* ---------- tabs ---------- */
+.tabs{flex:0 0 auto;display:flex;gap:8px;padding:4px 16px 10px}
+.tab{
+  padding:9px 16px;border-radius:999px;font-size:14.5px;font-weight:700;color:var(--ink-soft);
+  background:#fffdf7cc;border:1px solid var(--line);box-shadow:0 1px 2px rgba(70,54,24,.05);
+  transition:transform .12s ease, background .15s ease;
+}
+.tab:hover{background:#fff}
+.tab:active{transform:scale(.98)}
+.tab.on{background:linear-gradient(180deg,var(--green-2),var(--green));color:#fff;border-color:transparent;
+  box-shadow:0 4px 12px rgba(47,107,79,.28)}
+.tab .n{font-size:11.5px;opacity:.75;font-weight:600;margin-left:5px}
+
+/* ---------- main layout ---------- */
+main{
+  flex:1 1 auto;min-height:0;display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(320px,378px);
+  gap:16px;padding:0 16px 16px;
+}
+.view{min-height:0;display:contents}
+.hidden{display:none !important}
+.boardSide{min-height:0;min-width:0;display:flex;align-items:center;justify-content:center;position:relative}
+.boardSide::before{
+  content:"";position:absolute;inset:-6px;border-radius:26px;background:
+   radial-gradient(60% 60% at 50% 0%, #ffffff88, transparent 70%);pointer-events:none;
+}
+.board{
+  position:relative;border-radius:14px;overflow:hidden;
+  box-shadow:0 14px 34px rgba(60,44,18,.20), 0 2px 6px rgba(60,44,18,.10), inset 0 0 0 6px #e8d7b4;
+  background:#e8d7b4;
+  touch-action:manipulation;user-select:none;
+}
+.board.grid8{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr)}
+.sq{position:relative;display:block;padding:0;margin:0;line-height:0;overflow:hidden}
+.sq.light{background:var(--sq-light)}
+.sq.dark{background:var(--sq-dark)}
+.board.wood{--sq-light:#f0dcb9;--sq-dark:#b08052}
+.board.cream{--sq-light:#f7ecd6;--sq-dark:#c9a888}
+.board.green{--sq-light:#f2e3c5;--sq-dark:#8fb07f}
+.board.blue{--sq-light:#eef0e4;--sq-dark:#7ea1bb}
+.sq .piece{position:absolute;inset:4%;width:92%;height:92%;pointer-events:none;
+  filter:drop-shadow(0 1.5px 1px rgba(40,30,10,.25))}
+.sq.last{box-shadow:inset 0 0 0 999px rgba(224,163,62,.28)}
+.sq.sel{box-shadow:inset 0 0 0 4px rgba(47,107,79,.75), inset 0 0 0 999px rgba(255,255,255,.14)}
+.sq.hintFrom{box-shadow:inset 0 0 0 4px rgba(224,163,62,.9)}
+.sq.hintTo{animation:hintPulse 1.1s ease-in-out infinite}
+.sq.check{background-image:radial-gradient(circle at 50% 50%, rgba(194,86,63,.80) 0%, rgba(194,86,63,.55) 42%, transparent 70%)}
+@keyframes hintPulse{
+  0%,100%{box-shadow:inset 0 0 0 4px rgba(224,163,62,.95), inset 0 0 0 999px rgba(224,163,62,.16)}
+  50%{box-shadow:inset 0 0 0 5px rgba(224,163,62,1), inset 0 0 0 999px rgba(224,163,62,.34)}
+}
+.dot{position:absolute;left:50%;top:50%;width:26%;height:26%;transform:translate(-50%,-50%);
+  border-radius:50%;background:rgba(47,107,79,.42);pointer-events:none}
+.sq.cap .dot{width:88%;height:88%;background:transparent;border:5px solid rgba(194,86,63,.55);box-sizing:border-box}
+.sq.legal{cursor:pointer}
+.coord{position:absolute;font-size:9px;font-weight:800;line-height:1;opacity:.62;pointer-events:none}
+.coord.f{right:3px;bottom:2px}
+.coord.r{left:3px;top:2px}
+.sq.light .coord{color:#6b5a3a}
+.sq.dark .coord{color:#24361f}
+.arrowLayer{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:3}
+.arrowLayer svg{width:100%;height:100%;display:block}
+.thinking{position:absolute;inset:0;display:none;place-items:center;background:rgba(255,253,247,.35)}
+.thinking.on{display:grid}
+.thinking .bubble{background:#fffdf7;border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:13px;
+  font-weight:700;color:var(--ink-soft);box-shadow:var(--shadow)}
+
+/* ---------- panel ---------- */
+.panel{
+  min-height:0;display:flex;flex-direction:column;gap:10px;overflow:hidden;
+}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:13px 14px}
+.card.grow{flex:1 1 auto;min-height:0;overflow:auto}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:12.5px;font-weight:700;color:var(--ink-soft)}
+.chip.on{background:var(--green-soft);border-color:#bcd9c6;color:var(--green)}
+.chip:active{transform:scale(.98)}
+.puzHead{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.puzNum{font-size:11.5px;font-weight:800;color:var(--green);background:var(--green-soft);padding:3px 8px;border-radius:999px}
+.puzTitle{font-size:16.5px;font-weight:800;letter-spacing:-.3px;margin:0;line-height:1.25}
+.turnRow{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--ink-soft)}
+.turnDot{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 0 3px #fdf0d4}
+.turnDot.mine{background:var(--green-2);box-shadow:0 0 0 3px #e2f0e6}
+.feedback{
+  font-size:14px;line-height:1.55;border-radius:14px;padding:11px 12px;background:#faf6ec;border:1px solid var(--line);
+  color:var(--ink-soft);min-height:62px;
+}
+.feedback.good{background:var(--green-soft);border-color:#c3ddcb;color:#22523b}
+.feedback.bad{background:var(--red-soft);border-color:#f2cdc2;color:#8c3a28}
+.feedback.hint{background:var(--amber-soft);border-color:#f0dcb0;color:#7c5814}
+.feedback b{font-weight:800}
+.feedback .why{margin-top:7px;padding-top:7px;border-top:1px dashed rgba(0,0,0,.10);font-size:13.5px;line-height:1.5}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{
+  flex:1 1 auto;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:11px 12px;border-radius:13px;font-size:14px;font-weight:800;
+  background:#fff;border:1px solid var(--line);color:var(--ink);box-shadow:0 1px 2px rgba(70,54,24,.06);
+  transition:transform .1s ease, filter .15s ease;
+}
+.btn:hover{filter:brightness(.99)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:linear-gradient(180deg,var(--green-2),var(--green));color:#fff;border-color:transparent;
+  box-shadow:0 5px 14px rgba(47,107,79,.26)}
+.btn.amber{background:linear-gradient(180deg,#f0b64f,#e0a33e);color:#4a3208;border-color:transparent}
+.btn:disabled{opacity:.45;cursor:default;box-shadow:none}
+.progressWrap{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted);font-weight:700}
+.bar{flex:1 1 auto;height:9px;border-radius:999px;background:#efe6d4;overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#4f9e72,#2f6b4f);transition:width .35s ease}
+.starsRow{display:flex;gap:3px;font-size:12px}
+.tipCard{flex:1 1 auto;min-height:0;overflow:auto}
+.tipTitle{font-size:12.5px;font-weight:800;color:var(--muted);margin-bottom:6px}
+.tipList{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+.tipList li{font-size:13px;line-height:1.5;color:var(--ink-soft);background:#faf6ec;border:1px solid var(--line);
+  border-radius:11px;padding:8px 10px}
+.tipList li b{color:var(--green)}
+
+/* ---------- NPC view ---------- */
+.npcPanel{display:flex;flex-direction:column;gap:9px;min-height:0}
+.segRow{display:flex;align-items:center;gap:8px}
+.segLabel{font-size:11.5px;font-weight:800;color:var(--muted);white-space:nowrap}
+.seg{display:flex;background:#f4eddd;border-radius:999px;padding:3px;gap:2px;flex:1 1 auto}
+.seg button{padding:7px 8px;border-radius:999px;font-size:12.5px;font-weight:800;color:var(--ink-soft);flex:1 1 0;white-space:nowrap}
+.seg button.on{background:#fff;color:var(--green);box-shadow:0 1px 3px rgba(70,54,24,.14)}
+.sideRow{display:flex;gap:8px;align-items:center}
+.pillInfo{display:flex;align-items:center;gap:6px;background:#faf5e9;border:1px solid var(--line);border-radius:10px;padding:5px 9px;font-size:12px;font-weight:700;color:var(--ink-soft)}
+.captured{display:flex;flex-wrap:wrap;gap:1px;align-items:center;min-height:22px}
+.captured svg{width:19px;height:19px;opacity:.92}
+.matScore{font-size:12.5px;font-weight:800;color:var(--green)}
+.movesCard{flex:1 1 auto;min-height:70px;overflow:auto}
+.movesList{display:grid;grid-template-columns:26px 1fr 1fr;gap:2px 6px;font-size:13px;font-variant-numeric:tabular-nums}
+.movesList .n{color:var(--muted);font-weight:700}
+.movesList .mv{font-weight:700;color:var(--ink)}
+.movesList .mv.last{color:var(--green);background:var(--green-soft);border-radius:6px;padding:0 4px}
+.emptyNote{grid-column:1 / -1;font-size:13px;color:var(--muted);line-height:1.5}
+
+/* ---------- modal ---------- */
+.modalBg{position:fixed;inset:0;background:rgba(35,28,14,.42);display:none;place-items:center;padding:18px;z-index:60;
+  backdrop-filter:blur(2px)}
+.modalBg.on{display:grid}
+.modal{background:var(--card);border-radius:22px;box-shadow:0 24px 60px rgba(40,28,8,.35);width:min(420px,100%);
+  padding:20px;text-align:center;animation:pop .18s ease-out}
+@keyframes pop{from{transform:scale(.94);opacity:.6}to{transform:scale(1);opacity:1}}
+.modal h2{margin:4px 0 6px;font-size:22px;letter-spacing:-.4px}
+.modal p{margin:0 0 14px;color:var(--ink-soft);font-size:14px;line-height:1.55}
+.modal .btns{justify-content:center}
+.promoRow{display:flex;gap:8px;justify-content:center;margin:6px 0 4px}
+.promoBtn{width:64px;height:64px;border-radius:14px;background:#f7f0df;border:1px solid var(--line);display:grid;place-items:center}
+.promoBtn:hover{background:#fff}
+.promoBtn svg{width:46px;height:46px}
+.hintList{text-align:left;font-size:13.5px;color:var(--ink-soft);line-height:1.6;margin:0 0 14px;padding-left:18px}
+
+/* ---------- confetti ---------- */
+.burst{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.burst i{position:absolute;font-size:18px;animation:fly 1s ease-out forwards}
+@keyframes fly{to{transform:translate(var(--dx),var(--dy)) rotate(var(--rot));opacity:0}}
+
+/* ---------- responsive ---------- */
+@media (max-width:980px){
+  body{overflow:auto}
+  .app{height:auto;min-height:100dvh}
+  main{grid-template-columns:1fr;grid-template-rows:auto auto;overflow:visible;padding-bottom:22px;align-items:start}
+  .boardSide{width:100%;aspect-ratio:1/1}
+  .panel{overflow:visible}
+  .card.grow,.movesCard{overflow:visible}
+  .brand h1{font-size:17px}
+  .tabs{padding-bottom:8px;overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{padding:8px 13px;font-size:13.5px;white-space:nowrap}
+  .feedback{min-height:0}
+  .modal{width:100%}
+}
+@media (max-width:420px){
+  .topbar{padding:8px 12px 2px}
+  main{padding:0 12px 18px;gap:12px}
+  .brand .sub{display:none}
+  .starPill{padding:6px 10px;font-size:12.5px}
+  .themeBtn span{display:none}
+  .puzTitle{font-size:15.5px}
+}
+@media (max-height:520px) and (orientation:landscape){
+  .brand .sub{display:none}
+  .topbar{padding-top:6px}
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><g fill="#fffaf0" stroke="#1e4632" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"><path d="M53 13l6 9c13 7 18 20 16 34l-2 13H33c-2-9 2-15 9-20l-7-1-3-12c2-8 10-16 21-23z"/></g></svg>
+      </div>
+      <div>
+        <h1>체스 학교</h1>
+        <div class="sub">마무리와 최적의 수를 배워요</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="starPill">⭐ <span id="starTotal">0</span></div>
+    <button class="themeBtn" id="themeBtn" aria-label="판 색 바꾸기">🎨 <span>판 색</span></button>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab on" data-tab="puzzle">🎯 마무리 학습 <span class="n" id="puzzleTabCount">0/24</span></button>
+    <button class="tab" data-tab="npc">🤖 NPC 대결</button>
+  </nav>
+
+  <main>
+    <section id="puzzleView" class="view">
+      <div class="boardSide" id="pBoardSide">
+        <div class="board" id="pBoard"></div>
+        <div class="thinking" id="pThinking"><div class="bubble">상대가 두는 중…</div></div>
+        <div class="burst" id="burstHost"></div>
+      </div>
+      <aside class="panel">
+        <div class="card">
+          <div class="chips" id="pChips">
+            <button class="chip on" data-cat="all">전체</button>
+            <button class="chip" data-cat="mate1">1수 메이트</button>
+            <button class="chip" data-cat="endgame">엔드게임</button>
+            <button class="chip" data-cat="tactic">전술</button>
+            <button class="chip" data-cat="mate2">2수 메이트</button>
+          </div>
+          <div style="height:10px"></div>
+          <div class="puzHead">
+            <span class="puzNum" id="pNum">1 / 24</span>
+            <h2 class="puzTitle" id="pTitle">문제</h2>
+          </div>
+          <div class="turnRow"><span class="turnDot mine" id="pTurnDot"></span><span id="pTurn">내 차례예요</span></div>
+          <div style="height:10px"></div>
+          <div class="feedback" id="pFeedback">한 번에 끝내 보세요!</div>
+        </div>
+        <div class="card">
+          <div class="btns">
+            <button class="btn amber" id="pHint">💡 힌트</button>
+            <button class="btn" id="pReset">↩️ 다시 두기</button>
+          </div>
+          <div style="height:8px"></div>
+          <div class="btns">
+            <button class="btn" id="pPrev">← 이전</button>
+            <button class="btn primary" id="pNext">다음 문제 →</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="progressWrap"><span id="progText">0 / 24 문제</span><div class="bar"><i id="barFill"></i></div></div>
+        </div>
+        <div class="card tipCard">
+          <div class="tipTitle">💡 기억해요</div>
+          <ul class="tipList" id="pTips"></ul>
+        </div>
+      </aside>
+    </section>
+
+    <section id="npcView" class="view hidden">
+      <div class="boardSide" id="nBoardSide">
+        <div class="board" id="nBoard"></div>
+        <div class="thinking" id="npcThinking"><div class="bubble">NPC가 생각 중…</div></div>
+      </div>
+      <aside class="panel npcPanel">
+        <div class="card">
+          <div class="segRow">
+            <span class="segLabel">난이도</span>
+            <div class="seg" id="diffSeg">
+              <button data-v="easy">🌱 입문</button>
+              <button data-v="normal" class="on">🌟 초급</button>
+              <button data-v="hard">🔥 중급</button>
+            </div>
+          </div>
+          <div style="height:8px"></div>
+          <div class="segRow">
+            <span class="segLabel">내 색</span>
+            <div class="seg" id="colorSeg">
+              <button data-v="w" class="on">백 (먼저)</button>
+              <button data-v="b">흑 (나중)</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="sideRow" style="justify-content:space-between;margin-bottom:4px">
+            <span class="pillInfo">🤖 NPC가 잡은 기물</span>
+            <span class="matScore" id="matScore">균형</span>
+          </div>
+          <div class="captured" id="capByNpc"></div>
+          <div style="height:6px"></div>
+          <div class="sideRow" style="margin-bottom:4px"><span class="pillInfo">🙋 내가 잡은 기물</span></div>
+          <div class="captured" id="capByMe"></div>
+        </div>
+        <div class="card grow movesCard">
+          <div class="turnRow" style="margin-bottom:6px">
+            <span class="turnDot mine" id="npcTurnDot"></span><span id="npcTurn">내 차례</span>
+          </div>
+          <div class="movesList" id="npcMoves"></div>
+        </div>
+        <div class="card">
+          <div class="feedback" id="npcStatus">기물을 눌러 움직여 보세요. 막히면 힌트를 눌러요!</div>
+          <div style="height:8px"></div>
+          <div class="btns">
+            <button class="btn amber" id="npcHint">💡 힌트</button>
+            <button class="btn" id="npcUndo">↩️ 무르기</button>
+            <button class="btn" id="npcNew">🏳️ 새 게임</button>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+</div>
+
+<div class="modalBg" id="promoModal">
+  <div class="modal">
+    <h2>어떤 기물로 승진할까요?</h2>
+    <p>보통은 가장 강한 <b>퀸</b>을 골라요.</p>
+    <div class="promoRow" id="promoRow"></div>
+    <div class="btns" style="margin-top:8px"><button class="btn" id="promoCancel">취소</button></div>
+  </div>
+</div>
+
+<div class="modalBg" id="overModal">
+  <div class="modal">
+    <div id="overEmoji" style="font-size:44px;line-height:1">🏆</div>
+    <h2 id="overTitle">이겼어요!</h2>
+    <p id="overMsg">멋진 마무리예요.</p>
+    <div class="btns">
+      <button class="btn primary" id="overAgain">다시 대결하기</button>
+      <button class="btn" id="overClose">마지막 수 보기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Chess engine for children — rules, evaluation, search.
+   Board index: 0 = a8 ... 63 = h1
+   Pieces: uppercase = white (PNBRQK), lowercase = black
+   ============================================================ */
+var CHESS = (function () {
+  'use strict';
+
+  var FILES = 'abcdefgh';
+  var START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+  var VAL = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 20000 };
+  var PIECE_KO = { p: '폰', n: '나이트', b: '비숍', r: '룩', q: '퀸', k: '킹' };
+
+  /* ---------- position parsing ---------- */
+  function parseFEN(fen) {
+    var parts = String(fen).trim().split(/\s+/);
+    var rows = parts[0].split('/');
+    var b = new Array(64).fill('');
+    for (var r = 0; r < 8; r++) {
+      var f = 0, row = rows[r];
+      for (var i = 0; i < row.length; i++) {
+        var ch = row[i];
+        if (ch >= '1' && ch <= '8') f += parseInt(ch, 10);
+        else { b[r * 8 + f] = ch; f++; }
+      }
+    }
+    var cast = 0;
+    var cs = parts[2] || '-';
+    if (cs.indexOf('K') >= 0) cast |= 1;
+    if (cs.indexOf('Q') >= 0) cast |= 2;
+    if (cs.indexOf('k') >= 0) cast |= 4;
+    if (cs.indexOf('q') >= 0) cast |= 8;
+    var ep = null;
+    if (parts[3] && parts[3] !== '-') {
+      var file = FILES.indexOf(parts[3][0]);
+      var rank = parseInt(parts[3][1], 10);
+      if (file >= 0) ep = (8 - rank) * 8 + file;
+    }
+    return {
+      b: b,
+      t: parts[1] === 'b' ? 'b' : 'w',
+      cast: cast,
+      ep: ep,
+      half: parts[4] ? parseInt(parts[4], 10) || 0 : 0,
+      full: parts[5] ? parseInt(parts[5], 10) || 1 : 1
+    };
+  }
+
+  function fenOf(s) {
+    var out = [];
+    for (var r = 0; r < 8; r++) {
+      var line = '', empty = 0;
+      for (var f = 0; f < 8; f++) {
+        var p = s.b[r * 8 + f];
+        if (!p) empty++;
+        else { if (empty) { line += empty; empty = 0; } line += p; }
+      }
+      if (empty) line += empty;
+      out.push(line);
+    }
+    var cs = '';
+    if (s.cast & 1) cs += 'K';
+    if (s.cast & 2) cs += 'Q';
+    if (s.cast & 4) cs += 'k';
+    if (s.cast & 8) cs += 'q';
+    var ep = '-';
+    if (s.ep !== null && s.ep !== undefined) ep = squareName(s.ep);
+    return out.join('/') + ' ' + s.t + ' ' + (cs || '-') + ' ' + ep + ' ' + s.half + ' ' + s.full;
+  }
+
+  function posKey(s) {
+    // position identity (for repetition): board + turn + castling + ep.
+    // every square is written ('.' when empty) so two different boards can never collide
+    var out = '';
+    for (var i = 0; i < 64; i++) out += (s.b[i] || '.');
+    return out + '|' + s.t + '|' + s.cast + '|' + (s.ep === null ? '-' : s.ep);
+  }
+
+  function squareName(i) { return FILES[i & 7] + (8 - (i >> 3)); }
+
+  function isWhitePiece(p) { return !!p && p === p.toUpperCase(); }
+  function colorOf(p) { return p ? (p === p.toUpperCase() ? 'w' : 'b') : null; }
+  function typeOf(p) { return p ? p.toLowerCase() : null; }
+
+  function kingSquare(b, color) {
+    var k = color === 'w' ? 'K' : 'k';
+    for (var i = 0; i < 64; i++) if (b[i] === k) return i;
+    return -1;
+  }
+
+  /* ---------- attack detection ---------- */
+  var KNIGHT_D = [[1, 2], [2, 1], [2, -1], [1, -2], [-1, -2], [-2, -1], [-2, 1], [-1, 2]];
+  var KING_D = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]];
+  var BISHOP_D = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
+  var ROOK_D = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+
+  function isAttacked(b, sq, by) {
+    if (sq < 0) return false;
+    var f = sq & 7, r = sq >> 3, d, ff, rr, p;
+    // pawns
+    if (by === 'w') {
+      for (d = -1; d <= 1; d += 2) {
+        ff = f + d; rr = r + 1;
+        if (ff >= 0 && ff < 8 && rr < 8 && b[rr * 8 + ff] === 'P') return true;
+      }
+    } else {
+      for (d = -1; d <= 1; d += 2) {
+        ff = f + d; rr = r - 1;
+        if (ff >= 0 && ff < 8 && rr >= 0 && b[rr * 8 + ff] === 'p') return true;
+      }
+    }
+    // knights
+    for (var i = 0; i < 8; i++) {
+      ff = f + KNIGHT_D[i][0]; rr = r + KNIGHT_D[i][1];
+      if (ff >= 0 && ff < 8 && rr >= 0 && rr < 8) {
+        p = b[rr * 8 + ff];
+        if (p === (by === 'w' ? 'N' : 'n')) return true;
+      }
+    }
+    // king
+    for (i = 0; i < 8; i++) {
+      ff = f + KING_D[i][0]; rr = r + KING_D[i][1];
+      if (ff >= 0 && ff < 8 && rr >= 0 && rr < 8) {
+        p = b[rr * 8 + ff];
+        if (p === (by === 'w' ? 'K' : 'k')) return true;
+      }
+    }
+    // bishops & queens
+    for (i = 0; i < 4; i++) {
+      ff = f + BISHOP_D[i][0]; rr = r + BISHOP_D[i][1];
+      while (ff >= 0 && ff < 8 && rr >= 0 && rr < 8) {
+        p = b[rr * 8 + ff];
+        if (p) {
+          if (p === (by === 'w' ? 'B' : 'b') || p === (by === 'w' ? 'Q' : 'q')) return true;
+          break;
+        }
+        ff += BISHOP_D[i][0]; rr += BISHOP_D[i][1];
+      }
+    }
+    // rooks & queens
+    for (i = 0; i < 4; i++) {
+      ff = f + ROOK_D[i][0]; rr = r + ROOK_D[i][1];
+      while (ff >= 0 && ff < 8 && rr >= 0 && rr < 8) {
+        p = b[rr * 8 + ff];
+        if (p) {
+          if (p === (by === 'w' ? 'R' : 'r') || p === (by === 'w' ? 'Q' : 'q')) return true;
+          break;
+        }
+        ff += ROOK_D[i][0]; rr += ROOK_D[i][1];
+      }
+    }
+    return false;
+  }
+
+  function inCheck(s, color) {
+    var k = kingSquare(s.b, color || s.t);
+    if (k < 0) return false;
+    return isAttacked(s.b, k, (color || s.t) === 'w' ? 'b' : 'w');
+  }
+
+  /* ---------- pseudo legal moves ---------- */
+  function genPseudo(s) {
+    var b = s.b, t = s.t, moves = [], white = t === 'w';
+    for (var i = 0; i < 64; i++) {
+      var p = b[i];
+      if (!p || isWhitePiece(p) !== white) continue;
+      var f = i & 7, r = i >> 3, type = p.toLowerCase(), d, ff, rr, to, q, j;
+      if (type === 'p') {
+        var dir = white ? -1 : 1, startRow = white ? 6 : 1, promoRow = white ? 0 : 7;
+        var r1 = r + dir;
+        if (r1 >= 0 && r1 < 8) {
+          var one = r1 * 8 + f;
+          if (!b[one]) {
+            if (r1 === promoRow) {
+              moves.push({ from: i, to: one, promo: 'q' }, { from: i, to: one, promo: 'r' },
+                         { from: i, to: one, promo: 'b' }, { from: i, to: one, promo: 'n' });
+            } else {
+              moves.push({ from: i, to: one });
+              if (r === startRow) {
+                var two = (r + 2 * dir) * 8 + f;
+                if (!b[two]) moves.push({ from: i, to: two, flag: 'dbl' });
+              }
+            }
+          }
+          for (d = -1; d <= 1; d += 2) {
+            ff = f + d;
+            if (ff < 0 || ff > 7) continue;
+            to = r1 * 8 + ff;
+            if (b[to] && isWhitePiece(b[to]) !== white) {
+              if (r1 === promoRow) {
+                moves.push({ from: i, to: to, promo: 'q', capture: true }, { from: i, to: to, promo: 'r', capture: true },
+                           { from: i, to: to, promo: 'b', capture: true }, { from: i, to: to, promo: 'n', capture: true });
+              } else moves.push({ from: i, to: to, capture: true });
+            } else if (!b[to] && s.ep !== null && s.ep === to) {
+              moves.push({ from: i, to: to, flag: 'ep', capture: true });
+            }
+          }
+        }
+      } else if (type === 'n' || type === 'k') {
+        var offs = type === 'n' ? KNIGHT_D : KING_D;
+        for (j = 0; j < 8; j++) {
+          ff = f + offs[j][0]; rr = r + offs[j][1];
+          if (ff < 0 || ff > 7 || rr < 0 || rr > 7) continue;
+          to = rr * 8 + ff; q = b[to];
+          if (q && isWhitePiece(q) === white) continue;
+          moves.push({ from: i, to: to, capture: !!q });
+        }
+      } else {
+        var dirs = type === 'b' ? BISHOP_D : (type === 'r' ? ROOK_D : BISHOP_D.concat(ROOK_D));
+        for (j = 0; j < dirs.length; j++) {
+          ff = f + dirs[j][0]; rr = r + dirs[j][1];
+          while (ff >= 0 && ff < 8 && rr >= 0 && rr < 8) {
+            to = rr * 8 + ff; q = b[to];
+            if (q) {
+              if (isWhitePiece(q) !== white) moves.push({ from: i, to: to, capture: true });
+              break;
+            }
+            moves.push({ from: i, to: to });
+            ff += dirs[j][0]; rr += dirs[j][1];
+          }
+        }
+      }
+    }
+    // castling
+    var kingSq = white ? 60 : 4;
+    if (b[kingSq] === (white ? 'K' : 'k')) {
+      if (white) {
+        if ((s.cast & 1) && b[63] === 'R' && !b[61] && !b[62] &&
+            !isAttacked(b, 60, 'b') && !isAttacked(b, 61, 'b') && !isAttacked(b, 62, 'b'))
+          moves.push({ from: 60, to: 62, flag: 'castleK' });
+        if ((s.cast & 2) && b[56] === 'R' && !b[57] && !b[58] && !b[59] &&
+            !isAttacked(b, 60, 'b') && !isAttacked(b, 59, 'b') && !isAttacked(b, 58, 'b'))
+          moves.push({ from: 60, to: 58, flag: 'castleQ' });
+      } else {
+        if ((s.cast & 4) && b[7] === 'r' && !b[5] && !b[6] &&
+            !isAttacked(b, 4, 'w') && !isAttacked(b, 5, 'w') && !isAttacked(b, 6, 'w'))
+          moves.push({ from: 4, to: 6, flag: 'castleK' });
+        if ((s.cast & 8) && b[0] === 'r' && !b[1] && !b[2] && !b[3] &&
+            !isAttacked(b, 4, 'w') && !isAttacked(b, 3, 'w') && !isAttacked(b, 2, 'w'))
+          moves.push({ from: 4, to: 2, flag: 'castleQ' });
+      }
+    }
+    return moves;
+  }
+
+  /* ---------- make move ---------- */
+  function makeMove(s, m) {
+    var b = s.b.slice(), from = m.from, to = m.to, p = b[from];
+    var white = isWhitePiece(p), captured = b[to] || '', cast = s.cast;
+    if (m.flag === 'ep') {
+      var capSq = white ? to + 8 : to - 8;
+      captured = b[capSq] || '';
+      b[capSq] = '';
+    }
+    b[to] = m.promo ? (white ? m.promo.toUpperCase() : m.promo) : p;
+    b[from] = '';
+    if (m.flag === 'castleK') { var row = from >> 3; b[row * 8 + 5] = b[row * 8 + 7]; b[row * 8 + 7] = ''; }
+    if (m.flag === 'castleQ') { row = from >> 3; b[row * 8 + 3] = b[row * 8 + 0]; b[row * 8 + 0] = ''; }
+    if (p === 'K') cast &= ~3;
+    if (p === 'k') cast &= ~12;
+    if (from === 63 || to === 63) cast &= ~1;
+    if (from === 56 || to === 56) cast &= ~2;
+    if (from === 7 || to === 7) cast &= ~4;
+    if (from === 0 || to === 0) cast &= ~8;
+    var ep = null;
+    if (p && p.toLowerCase() === 'p' && Math.abs((to >> 3) - (from >> 3)) === 2) ep = (from + to) / 2;
+    var isPawn = p && p.toLowerCase() === 'p';
+    var half = (isPawn || captured) ? 0 : s.half + 1;
+    var full = s.t === 'b' ? s.full + 1 : s.full;
+    return { b: b, t: s.t === 'w' ? 'b' : 'w', cast: cast, ep: ep, half: half, full: full, captured: captured };
+  }
+
+  function genLegal(s) {
+    var pseudo = genPseudo(s), out = [], me = s.t;
+    for (var i = 0; i < pseudo.length; i++) {
+      var ns = makeMove(s, pseudo[i]);
+      var k = kingSquare(ns.b, me);
+      if (k >= 0 && !isAttacked(ns.b, k, me === 'w' ? 'b' : 'w')) out.push(pseudo[i]);
+    }
+    return out;
+  }
+
+  function movesFromLegal(s, from, to, promo) {
+    var legal = genLegal(s);
+    for (var i = 0; i < legal.length; i++) {
+      var m = legal[i];
+      if (m.from === from && m.to === to && (promo ? m.promo === promo : (!m.promo || m.promo === 'q')))
+        return m;
+    }
+    return null;
+  }
+
+  /* ---------- game state ---------- */
+  function isCheckmate(s) {
+    return inCheck(s, s.t) && genLegal(s).length === 0;
+  }
+  function isStalemate(s) {
+    return !inCheck(s, s.t) && genLegal(s).length === 0;
+  }
+  function insufficientMaterial(s) {
+    var pieces = [], bishops = [];
+    for (var i = 0; i < 64; i++) {
+      var p = s.b[i];
+      if (!p || p.toLowerCase() === 'k') continue;
+      pieces.push(p);
+    }
+    if (pieces.length === 0) return true;
+    if (pieces.length === 1 && pieces[0].toLowerCase() === 'n') return true;
+    if (pieces.length === 1 && pieces[0].toLowerCase() === 'b') return true;
+    if (pieces.length === 2) {
+      var a = pieces[0].toLowerCase(), b2 = pieces[1].toLowerCase();
+      if (a === 'b' && b2 === 'b') {
+        // same colour bishops
+        var cols = [];
+        for (i = 0; i < 64; i++) {
+          var q = s.b[i];
+          if (q && q.toLowerCase() === 'b') cols.push(((i & 7) + (i >> 3)) % 2);
+        }
+        if (cols.length === 2 && cols[0] === cols[1]) return true;
+      }
+      if ((a === 'n' && b2 === 'n') && pieces[0].toUpperCase() !== pieces[1].toUpperCase()) {
+        // K+N vs K+N can be a draw in principle but is not automatically drawn; treat as not insufficient
+      }
+    }
+    return false;
+  }
+
+  function status(s, keys) {
+    var legal = genLegal(s);
+    if (legal.length === 0) {
+      if (inCheck(s, s.t)) return { over: true, result: s.t === 'w' ? 'black' : 'white', reason: 'checkmate' };
+      return { over: true, result: 'draw', reason: 'stalemate' };
+    }
+    if (s.half >= 100) return { over: true, result: 'draw', reason: 'fifty' };
+    if (keys && keys.length) {
+      var k = posKey(s), n = 0;
+      for (var i = 0; i < keys.length; i++) if (keys[i] === k) n++;
+      if (n >= 3) return { over: true, result: 'draw', reason: 'repetition' };
+    }
+    if (insufficientMaterial(s)) return { over: true, result: 'draw', reason: 'material' };
+    return { over: false, result: null, reason: null, legal: legal };
+  }
+
+  /* ---------- evaluation ---------- */
+  // tables are written with rank 8 first (index 0 = a8)
+  var PST = {
+    p: [0,0,0,0,0,0,0,0, 50,50,50,50,50,50,50,50, 10,10,20,30,30,20,10,10,
+        5,5,10,25,25,10,5,5, 0,0,0,20,20,0,0,0, 5,-5,-10,0,0,-10,-5,5,
+        5,10,10,-20,-20,10,10,5, 0,0,0,0,0,0,0,0],
+    n: [-50,-40,-30,-30,-30,-30,-40,-50, -40,-20,0,0,0,0,-20,-40, -30,0,10,15,15,10,0,-30,
+        -30,5,15,20,20,15,5,-30, -30,0,15,20,20,15,0,-30, -30,5,10,15,15,10,5,-30,
+        -40,-20,0,5,5,0,-20,-40, -50,-40,-30,-30,-30,-30,-40,-50],
+    b: [-20,-10,-10,-10,-10,-10,-10,-20, -10,0,0,0,0,0,0,-10, -10,0,5,10,10,5,0,-10,
+        -10,5,5,10,10,5,5,-10, -10,0,10,10,10,10,0,-10, -10,10,10,10,10,10,10,-10,
+        -10,5,0,0,0,0,5,-10, -20,-10,-10,-10,-10,-10,-10,-20],
+    r: [0,0,0,0,0,0,0,0, 5,10,10,10,10,10,10,5, -5,0,0,0,0,0,0,-5,
+        -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5,
+        -5,0,0,0,0,0,0,-5, 0,0,0,5,5,0,0,0],
+    q: [-20,-10,-10,-5,-5,-10,-10,-20, -10,0,0,0,0,0,0,-10, -10,0,5,5,5,5,0,-10,
+        -5,0,5,5,5,5,0,-5, 0,0,5,5,5,5,0,-5, -10,5,5,5,5,5,0,-10,
+        -10,0,5,0,0,0,0,-10, -20,-10,-10,-5,-5,-10,-10,-20],
+    k: [-30,-40,-40,-50,-50,-40,-40,-30, -30,-40,-40,-50,-50,-40,-40,-30, -30,-40,-40,-50,-50,-40,-40,-30,
+        -30,-40,-40,-50,-50,-40,-40,-30, -20,-30,-30,-40,-40,-30,-30,-20, -10,-20,-20,-20,-20,-20,-20,-10,
+        20,20,0,0,0,0,20,20, 20,30,10,0,0,10,30,20],
+    kEnd: [-50,-40,-30,-20,-20,-30,-40,-50, -30,-20,-10,0,0,-10,-20,-30, -30,-10,20,30,30,20,-10,-30,
+        -30,-10,30,40,40,30,-10,-30, -30,-10,30,40,40,30,-10,-30, -30,-10,20,30,30,20,-10,-30,
+        -30,-30,0,0,0,0,-30,-30, -50,-30,-30,-30,-30,-30,-30,-50]
+  };
+
+  function evaluate(s) {
+    var score = 0, i, p, wp, v, type;
+    var heavy = 0;
+    for (i = 0; i < 64; i++) {
+      p = s.b[i];
+      if (!p) continue;
+      type = p.toLowerCase();
+      if (type === 'q' || type === 'r' || type === 'b' || type === 'n') heavy += (type === 'q' ? 9 : type === 'r' ? 5 : 3);
+    }
+    var endgame = heavy <= 10;
+    for (i = 0; i < 64; i++) {
+      p = s.b[i];
+      if (!p) continue;
+      type = p.toLowerCase();
+      if (type === 'k') continue;
+      wp = isWhitePiece(p);
+      v = VAL[type];
+      // PST written from white's viewpoint with rank 8 first → white uses index i, black mirrors
+      v += type === 'k' ? 0 : PST[type][wp ? i : (i ^ 56)];
+      score += wp ? v : -v;
+    }
+    // kings
+    var wk = kingSquare(s.b, 'w'), bk = kingSquare(s.b, 'b');
+    if (wk >= 0) score += (endgame ? PST.kEnd : PST.k)[wk];
+    if (bk >= 0) score -= (endgame ? PST.kEnd : PST.k)[bk ^ 56];
+    // small mobility term & bishop pair
+    var wb = 0, bb = 0;
+    for (i = 0; i < 64; i++) {
+      if (s.b[i] === 'B') wb++;
+      if (s.b[i] === 'b') bb++;
+    }
+    if (wb >= 2) score += 25;
+    if (bb >= 2) score -= 25;
+    return s.t === 'w' ? score : -score;
+  }
+
+  /* ---------- search ---------- */
+  var MATE = 100000;
+
+  function moveScore(mv, s) {
+    var sc = 0;
+    var victim = s.b[mv.to];
+    if (mv.flag === 'ep') victim = s.t === 'w' ? 'p' : 'P';
+    if (victim) sc += 1000 + VAL[victim.toLowerCase()] - VAL[s.b[mv.from].toLowerCase()] / 10;
+    if (mv.promo) sc += 800 + VAL[mv.promo];
+    if (mv.flag === 'castleK' || mv.flag === 'castleQ') sc += 60;
+    return sc;
+  }
+
+  function orderMoves(s, moves) {
+    var scored = moves.map(function (m) { return { m: m, s: moveScore(m, s) }; });
+    scored.sort(function (a, b) { return b.s - a.s; });
+    return scored.map(function (x) { return x.m; });
+  }
+
+  function quiesce(s, alpha, beta, depth, ply) {
+    var stand = evaluate(s);
+    if (stand >= beta) return beta;
+    if (stand > alpha) alpha = stand;
+    if (depth <= 0) return alpha;
+    var moves = genLegal(s).filter(function (m) { return m.capture || m.promo; });
+    moves = orderMoves(s, moves);
+    for (var i = 0; i < moves.length; i++) {
+      var ns = makeMove(s, moves[i]);
+      var sc = -quiesce(ns, -beta, -alpha, depth - 1, ply + 1);
+      if (sc >= beta) return beta;
+      if (sc > alpha) alpha = sc;
+    }
+    return alpha;
+  }
+
+  function negamax(s, depth, alpha, beta, ply, deadline) {
+    if ((ply & 1) === 0 && performance.now() > deadline) return evaluate(s);
+    var moves = genLegal(s);
+    if (moves.length === 0) {
+      if (inCheck(s, s.t)) return -MATE + ply;
+      return 0;
+    }
+    if (depth <= 0) return quiesce(s, alpha, beta, 4, ply);
+    moves = orderMoves(s, moves);
+    var best = -Infinity;
+    for (var i = 0; i < moves.length; i++) {
+      var ns = makeMove(s, moves[i]);
+      var sc = -negamax(ns, depth - 1, -beta, -alpha, ply + 1, deadline);
+      if (sc > best) best = sc;
+      if (sc > alpha) alpha = sc;
+      if (alpha >= beta) break;
+    }
+    return best;
+  }
+
+  function rootSearch(s, depth, deadline) {
+    var moves = orderMoves(s, genLegal(s));
+    if (!moves.length) return null;
+    var list = [];
+    for (var i = 0; i < moves.length; i++) {
+      var ns = makeMove(s, moves[i]);
+      // full window for every root move so each move gets its true score
+      var sc = -negamax(ns, depth - 1, -Infinity, Infinity, 1, deadline);
+      list.push({ move: moves[i], score: sc });
+    }
+    list.sort(function (a, b) { return b.score - a.score; });
+    return list;
+  }
+
+  function search(s, opts) {
+    opts = opts || {};
+    var maxDepth = opts.depth || 3, timeMs = opts.timeMs || 300;
+    var t0 = performance.now(), deadline = t0 + timeMs;
+    var bestList = null, reached = 0;
+    for (var d = 1; d <= maxDepth; d++) {
+      var list = rootSearch(s, d, deadline);
+      if (!list) return null;
+      bestList = list; reached = d;
+      if (list[0].score > MATE - 1000) break;
+      if (performance.now() - t0 > timeMs * 0.55) break;
+    }
+    return { list: bestList, depth: reached, move: bestList ? bestList[0].move : null, score: bestList ? bestList[0].score : 0 };
+  }
+
+  /* ---------- forced mate solver ---------- */
+  var mateCache = {};
+  function mateCacheKey(s, n) { return posKey(s) + '#' + n; }
+
+  function canMate(s, n) {
+    if (n < 1) return false;
+    var key = mateCacheKey(s, n);
+    if (key in mateCache) return mateCache[key];
+    var moves = genLegal(s);
+    if (!moves.length) { mateCache[key] = false; return false; }
+    var result = false, i, j;
+    if (n === 1) {
+      for (i = 0; i < moves.length; i++) {
+        var s2 = makeMove(s, moves[i]);
+        if (isCheckmate(s2)) { result = true; break; }
+      }
+      mateCache[key] = result;
+      return result;
+    }
+    for (i = 0; i < moves.length && !result; i++) {
+      var ns = makeMove(s, moves[i]);
+      if (isCheckmate(ns)) { result = true; break; }
+      var reps = genLegal(ns);
+      if (!reps.length) continue; // stalemate
+      var all = true;
+      for (j = 0; j < reps.length; j++) {
+        if (!canMate(makeMove(ns, reps[j]), n - 2)) { all = false; break; }
+      }
+      if (all) result = true;
+    }
+    mateCache[key] = result;
+    return result;
+  }
+
+  function mateDistance(s, maxPlies) {
+    for (var n = 1; n <= (maxPlies || 5); n += 2) {
+      if (canMate(s, n)) return n;
+    }
+    return 0;
+  }
+
+  // all moves that achieve the shortest forced mate found within maxPlies
+  function matingMoves(s, maxPlies) {
+    var dist = mateDistance(s, maxPlies);
+    if (!dist) return { distance: 0, moves: [] };
+    var out = [];
+    var moves = genLegal(s);
+    for (var i = 0; i < moves.length; i++) {
+      var ns = makeMove(s, moves[i]);
+      if (isCheckmate(ns)) { out.push(moves[i]); continue; }
+      if (dist === 1) continue;
+      var reps = genLegal(ns);
+      if (!reps.length) continue;
+      var all = true;
+      for (var j = 0; j < reps.length; j++) {
+        if (!canMate(makeMove(ns, reps[j]), dist - 2)) { all = false; break; }
+      }
+      if (all) out.push(moves[i]);
+    }
+    return { distance: dist, moves: out };
+  }
+
+  // opponent's most stubborn defense (maximises the mate distance)
+  function bestDefense(s, maxPlies) {
+    var moves = genLegal(s);
+    if (!moves.length) return null;
+    var best = null, bestD = -1;
+    for (var i = 0; i < moves.length; i++) {
+      var ns = makeMove(s, moves[i]);
+      var d = mateDistance(ns, maxPlies);
+      if (d > bestD) { bestD = d; best = moves[i]; }
+    }
+    if (best) return best;
+    return moves[0];
+  }
+
+  /* ---------- SAN ---------- */
+  function san(s, move) {
+    if (move.flag === 'castleK') return 'O-O' + suffix(s, move);
+    if (move.flag === 'castleQ') return 'O-O-O' + suffix(s, move);
+    var p = s.b[move.from], type = p.toLowerCase();
+    var str = '';
+    if (type !== 'p') {
+      str += type.toUpperCase();
+      // disambiguation
+      var others = genLegal(s).filter(function (m) {
+        return m.from !== move.from && m.to === move.to && s.b[m.from] && s.b[m.from].toLowerCase() === type;
+      });
+      if (others.length) {
+        var sameFile = others.some(function (m) { return (m.from & 7) === (move.from & 7); });
+        var sameRank = others.some(function (m) { return (m.from >> 3) === (move.from >> 3); });
+        if (!sameFile) str += FILES[move.from & 7];
+        else if (!sameRank) str += (8 - (move.from >> 3));
+        else str += squareName(move.from);
+      }
+    } else if (move.capture) {
+      str += FILES[move.from & 7];
+    }
+    if (move.capture) str += 'x';
+    str += squareName(move.to);
+    if (move.promo) str += '=' + move.promo.toUpperCase();
+    return str + suffix(s, move);
+  }
+
+  function suffix(s, move) {
+    var ns = makeMove(s, move);
+    if (isCheckmate(ns)) return '#';
+    if (inCheck(ns, ns.t)) return '+';
+    return '';
+  }
+
+  /* ---------- helpers for UI ---------- */
+  function toMoveKey(m) {
+    return squareName(m.from) + squareName(m.to) + (m.promo || '');
+  }
+  function fromMoveKey(s, key) {
+    if (!key || key.length < 4) return null;
+    var from = (8 - parseInt(key[1], 10)) * 8 + FILES.indexOf(key[0]);
+    var to = (8 - parseInt(key[3], 10)) * 8 + FILES.indexOf(key[2]);
+    var promo = key.length > 4 ? key[4].toLowerCase() : null;
+    var legal = genLegal(s);
+    for (var i = 0; i < legal.length; i++) {
+      var m = legal[i];
+      if (m.from === from && m.to === to) {
+        if (m.promo) { if (promo && m.promo === promo) return m; if (!promo && m.promo === 'q') return m; }
+        else if (!promo) return m;
+      }
+    }
+    return null;
+  }
+
+  return {
+    START_FEN: START_FEN, VAL: VAL, PIECE_KO: PIECE_KO, MATE: MATE,
+    parseFEN: parseFEN, fenOf: fenOf, posKey: posKey, squareName: squareName,
+    kingSquare: kingSquare, isAttacked: isAttacked, inCheck: inCheck,
+    genPseudo: genPseudo, genLegal: genLegal, makeMove: makeMove, movesFromLegal: movesFromLegal,
+    isCheckmate: isCheckmate, isStalemate: isStalemate, status: status,
+    insufficientMaterial: insufficientMaterial,
+    evaluate: evaluate, search: search, mateDistance: mateDistance, canMate: canMate,
+    matingMoves: matingMoves, bestDefense: bestDefense, san: san,
+    toMoveKey: toMoveKey, fromMoveKey: fromMoveKey, orderMoves: orderMoves,
+    isWhitePiece: isWhitePiece, colorOf: colorOf, typeOf: typeOf,
+    clearMateCache: function () { mateCache = {}; }
+  };
+})();
+if (typeof window !== 'undefined') window.CHESS = CHESS;
+
+</script>
+<script>
+/* ============================================================
+   24 verified puzzles for children
+   cat: mate1 | endgame | tactic | mate2
+   mode: 'mate'  → the player must play a move that forces the
+                   shortest mate (verified by the engine)
+         'best'  → one decisive move (verified as the engine's best)
+   ============================================================ */
+var PUZZLES = [
+  /* ---------------- 1수 체크메이트 ---------------- */
+  {
+    id: 'm1-1', cat: 'mate1', mode: 'mate', plies: 1,
+    title: '퀸으로 맨 윗줄 막기',
+    fen: '7k/6pp/8/8/8/8/8/3Q2K1 w - - 0 1',
+    solutions: ['d1d8'],
+    hint1: '퀸을 움직여 보세요. 상대 킹이 있는 맨 윗줄을 노려보세요.',
+    hint2: 'd8 칸으로 가면 상대 킹의 옆 칸 g8까지 퀸이 막을 수 있어요.',
+    explain: '퀸이 d8로 올라가면 상대 킹은 h8에서 꼼짝 못 해요. 자기 폰 두 개(g7·h7)가 옆 칸을 막고 있고, 남은 g8 칸은 우리 퀸이 지키고 있거든요. 상대 킹이 갈 곳이 하나도 없어서 바로 체크메이트예요!'
+  },
+  {
+    id: 'm1-2', cat: 'mate1', mode: 'mate', plies: 1,
+    title: '룩으로 맨 윗줄 막기',
+    fen: '7k/6pp/8/8/8/8/8/R6K w - - 0 1',
+    solutions: ['a1a8'],
+    hint1: '룩을 위쪽으로 쭉 올려 보세요.',
+    hint2: 'a8 칸이면 상대 킹 h8까지 한 줄로 이어져요.',
+    explain: '룩이 a8로 가면 맨 윗줄 전체가 룩의 길이 돼요. 폰 두 개에 갇힌 상대 킹은 도망갈 칸이 없어요. 룩은 멀리서도 줄 하나를 통째로 막을 수 있는 게 힘이에요.'
+  },
+  {
+    id: 'm1-3', cat: 'mate1', mode: 'mate', plies: 1,
+    title: '나이트로 꼼짝 못 하게',
+    fen: '6rk/6pp/8/4N3/8/8/8/6K1 w - - 0 1',
+    solutions: ['e5f7'],
+    hint1: '나이트로 상대 킹 바로 옆 칸을 노려 보세요.',
+    hint2: 'f7로 가면 킹을 공격해요. 킹은 자기 룩과 폰에 갇혀 있어요.',
+    explain: '나이트가 f7로 뛰면 상대 킹을 바로 옆에서 공격해요. 킹은 나이트를 잡을 수 없고, g8은 자기 룩이, g7·h7은 자기 폰이 꽉 막고 있어요. 자기 기물에 갇힌 킹을 잡는 이 모양을 "스모더드 메이트"라고 불러요.'
+  },
+  {
+    id: 'm1-4', cat: 'mate1', mode: 'mate', plies: 1,
+    title: '두 룩이 함께 끝내기',
+    fen: '7k/6R1/7K/8/8/8/8/R7 w - - 0 1',
+    solutions: ['a1a8'],
+    hint1: '아직 움직이지 않은 룩이 하나 있어요.',
+    hint2: 'a1 룩을 a8로! h7은 g7 룩이, g7 룩은 우리 킹이 지켜줘요.',
+    explain: 'a8로 룩을 보내면 맨 윗줄이 막혀요. 상대 킹이 도망갈 h7은 g7의 우리 룩이 지키고, 그 룩은 다시 우리 킹(h6)이 지켜주고 있어요. 기물끼리 서로 지켜주면 상대는 아무것도 할 수 없어요.'
+  },
+  {
+    id: 'm1-5', cat: 'mate1', mode: 'mate', plies: 1,
+    title: '킹과 룩의 협동',
+    fen: '7k/8/7K/8/8/8/8/R7 w - - 0 1',
+    solutions: ['a1a8'],
+    hint1: '룩으로 맨 위 줄을 막아 보세요.',
+    hint2: 'a8로 가면 돼요. h7은 우리 킹이 이미 막고 있어요.',
+    explain: '우리 킹이 h6까지 다가와 있어서 상대 킹은 h7로 도망갈 수 없어요. 이때 룩을 a8로 보내면 윗줄이 막혀서 체크메이트! 킹과 룩이 함께 일하는 것이 엔드게임의 기본이에요.'
+  },
+  {
+    id: 'm1-6', cat: 'mate1', mode: 'mate', plies: 1,
+    title: '폰에 갇힌 킹',
+    fen: '6k1/5ppp/8/8/8/8/8/Q5K1 w - - 0 1',
+    solutions: ['a1a8'],
+    hint1: '퀸을 맨 윗줄로 보내 보세요.',
+    hint2: 'a8 칸이면 상대 킹까지 한 줄로 이어져요.',
+    explain: '퀸이 a8로 가면 맨 윗줄 전체가 퀸의 길이에요. 상대 킹은 f7·g7·h7 자기 폰에 둘러싸여 도망갈 곳이 없어요. 폰이 많아도 킹이 갇히면 오히려 약점이 돼요.'
+  },
+  {
+    id: 'm1-7', cat: 'mate1', mode: 'mate', plies: 1,
+    title: '무승부를 피하고 메이트!',
+    fen: '7k/8/5N2/8/8/8/8/6QK w - - 0 1',
+    solutions: ['g1g8'],
+    hint1: '체크로 끝내야 해요. 조용한 수를 두면 무승부가 돼요.',
+    hint2: 'g8로 가면 f6의 나이트가 퀸을 지켜줘요.',
+    explain: '퀸이 g8로 가면 f6의 나이트가 퀸을 지켜주고 있어요. 상대 킹은 퀸을 잡을 수도 없고, g7·h7·g8 어디로도 갈 수 없어서 체크메이트예요. 여기서 퀸을 조용히 다른 곳에 두면 상대가 움직일 수 없어서 무승부(스테일메이트)가 되니 조심해야 해요!'
+  },
+
+  /* ---------------- 엔드게임 마무리 ---------------- */
+  {
+    id: 'eg-1', cat: 'endgame', mode: 'mate', plies: 3,
+    title: '킹으로 다가가기 (오포지션)',
+    fen: 'k7/8/2K5/8/8/8/8/7R w - - 0 1',
+    solutions: ['c6b6', 'c6c7'],
+    hint1: '룩이 아니라 킹을 움직여 보세요.',
+    hint2: 'b6이나 c7로 다가가면 상대 킹의 도망 칸이 줄어들어요.',
+    explain: '상대 킹은 구석(a8)에 몰려 있어요. 이제 룩이 아니라 우리 킹을 한 칸 다가가게 해서 상대 킹의 옆 칸을 막아야 해요. 그러면 상대 킹이 밀려나고, 다음 수에 룩으로 맨 윗줄을 막으면 체크메이트예요. 룩으로만 체크하면 킹이 계속 도망가니, 킹이 먼저 다가가는 게 포인트예요!'
+  },
+  {
+    id: 'eg-2', cat: 'endgame', mode: 'mate', plies: 3,
+    title: '킹으로 구석에 몰기',
+    fen: '7k/8/5K2/8/8/8/8/R7 w - - 0 1',
+    solutions: ['f6g6', 'f6f7'],
+    hint1: '룩이 아니라 킹을 움직여 보세요.',
+    hint2: 'g6이나 f7로 다가가면 상대 킹이 g8로 나올 수밖에 없어요.',
+    explain: '상대 킹이 h8 구석에 있어요. 우리 킹을 g6이나 f7로 다가가면 상대 킹은 g8로 나올 수밖에 없어요. 그때 룩으로 맨 윗줄을 막으면 체크메이트! 킹으로 길을 좁히고, 룩으로 끝내는 순서를 기억하세요.'
+  },
+  {
+    id: 'eg-3', cat: 'endgame', mode: 'mate', plies: 3,
+    title: '킹으로 밀어내기',
+    fen: 'k2K4/8/8/1R6/8/8/8/8 w - - 0 1',
+    solutions: ['d8c7'],
+    hint1: '킹으로 상대 킹을 밀어내 보세요.',
+    hint2: 'c7로 가면 상대 킹은 a7으로 갈 수밖에 없어요.',
+    explain: '우리 킹이 c7로 다가가면 상대 킹은 a7으로 밀려나요. 그리고 룩으로 그 줄을 막으면 끝이에요. 룩은 상대 킹과 같은 줄에 서서 멀리서 체크하는 것이 가장 안전해요.'
+  },
+  {
+    id: 'eg-4', cat: 'endgame', mode: 'mate', plies: 1,
+    title: '승진으로 바로 끝내기',
+    fen: '7k/5P2/7K/8/8/8/8/8 w - - 0 1',
+    solutions: ['f7f8q', 'f7f8r'],
+    hint1: '폰을 끝까지 밀어 승진시켜 보세요.',
+    hint2: 'f8로 가면 퀸이 되어 바로 체크메이트!',
+    explain: '폰이 마지막 줄에 닿으면 퀸으로 승진해요! f8에서 퀸이 되면 상대 킹 h8까지 한 줄로 이어져서 바로 체크메이트예요. 룩으로 승진해도 똑같이 메이트가 돼요. 승진은 대결을 끝내는 가장 큰 무기예요.'
+  },
+  {
+    id: 'eg-5', cat: 'endgame', mode: 'mate', plies: 3,
+    title: '퀸보다 킹이 먼저',
+    fen: 'k2K4/5Q2/8/8/8/8/8/8 w - - 0 1',
+    solutions: ['d8c7'],
+    hint1: '퀸만 계속 체크하면 안 돼요. 킹을 움직여 보세요.',
+    hint2: 'c7로 가면 상대 킹이 a7으로 갇혀요.',
+    explain: '퀸으로 체크만 하면 상대 킹이 계속 도망가요. 대신 우리 킹을 c7로 보내면 상대 킹이 a7으로 밀려나고, 그다음 퀸으로 막으면 체크메이트예요. 강한 기물보다 킹이 함께 다가가는 것이 마무리의 비결이에요.'
+  },
+  {
+    id: 'eg-6', cat: 'endgame', mode: 'mate', plies: 3,
+    title: '기다리는 수 (대기수)',
+    fen: '6k1/8/5K2/8/8/8/8/R7 w - - 0 1',
+    solutions: ['a1h1'],
+    hint1: '체크도 아니고 잡는 것도 아니에요. 룩을 다른 곳으로 옮겨 기다려 보세요.',
+    hint2: '룩을 h1로 옮기면 상대 킹이 스스로 움직여야 해요.',
+    explain: '상대 킹은 g8에 갇혀 있고, 우리 킹이 f6에서 길을 막고 있어요. 이때 룩을 h1로 조용히 옮기면 상대는 아무 좋은 수도 없이 킹을 움직여야 하고, 그 순간 룩이 맨 윗줄로 들어가 체크메이트예요. 상대에게 먼저 움직이게 하는 "대기수"는 엔드게임의 좋은 무기예요.'
+  },
+
+  /* ---------------- 결정타 전술 ---------------- */
+  {
+    id: 'tc-1', cat: 'tactic', mode: 'best', plies: 1,
+    title: '나이트 포크 (킹과 퀸)',
+    fen: 'k7/8/N7/1q6/8/8/8/6K1 w - - 0 1',
+    solutions: ['a6c7'],
+    hint1: '나이트로 두 곳을 동시에 노려 보세요.',
+    hint2: 'c7 칸이면 킹(a8)과 퀸(b5)을 함께 공격할 수 있어요.',
+    explain: '나이트가 c7로 뛰면 상대 킹(a8)을 공격하면서 동시에 퀸(b5)도 노려요. 이렇게 한 수로 두 개를 공격하는 것을 "포크"라고 해요. 킹은 먼저 피해야 하니까, 그동안 나이트가 퀸을 잡을 수 있어요.'
+  },
+  {
+    id: 'tc-2', cat: 'tactic', mode: 'best', plies: 1,
+    title: '체크와 함께 하는 포크',
+    fen: '2r3k1/8/2N5/8/8/8/8/6K1 w - - 0 1',
+    solutions: ['c6e7'],
+    hint1: '나이트가 킹과 룩을 함께 노릴 수 있는 칸을 찾아보세요.',
+    hint2: 'e7로 가면 체크를 하면서 룩(c8)도 공격해요.',
+    explain: '나이트를 e7로 보내면 상대 킹(g8)에게 체크를 하면서 룩(c8)도 함께 노려요. 킹이 먼저 도망가야 하니까 룩은 그대로 남아요. 포크는 체크와 함께 쓰면 가장 강해요.'
+  },
+  {
+    id: 'tc-3', cat: 'tactic', mode: 'best', plies: 1,
+    title: '핀에 걸린 나이트 잡기',
+    fen: '4k3/8/2n5/1B1P4/8/8/8/6K1 w - - 0 1',
+    solutions: ['d5c6'],
+    hint1: '상대 나이트가 왜 도망가지 못하는지 살펴보세요.',
+    hint2: 'd5의 폰으로 c6의 나이트를 잡아 보세요.',
+    explain: '검은 나이트는 킹(e8)과 같은 대각선 위에 있어서 움직이면 킹이 공격받아요. 이렇게 꼼짝 못 하게 묶는 것을 "핀"이라고 해요. 핀에 걸린 기물은 도망가지 못하니, 폰으로 그냥 잡으면 이득이에요.'
+  },
+  {
+    id: 'tc-4', cat: 'tactic', mode: 'best', plies: 1,
+    title: '먼저 잡는 쪽이 이겨요',
+    fen: '6k1/4q3/8/8/8/8/8/4R1K1 w - - 0 1',
+    solutions: ['e1e7'],
+    hint1: '우리 룩과 상대 퀸이 서로 노리고 있어요.',
+    hint2: '룩으로 e7의 퀸을 먼저 잡아 보세요.',
+    explain: '우리 룩과 상대 퀸이 같은 줄에서 서로를 노리고 있어요. 이런 때는 먼저 잡는 쪽이 이겨요. 룩으로 퀸을 잡으면 퀸을 얻고, 설령 룩을 잃어도 크게 이득이에요. 기물이 서로 노릴 때는 순서가 중요해요.'
+  },
+  {
+    id: 'tc-5', cat: 'tactic', mode: 'best', plies: 1,
+    title: '발견 체크로 퀸 잡기',
+    fen: '4k3/3q4/8/4N3/8/8/8/4R1K1 w - - 0 1',
+    solutions: ['e5d7'],
+    hint1: '나이트가 비켜서 룩의 길을 열어 줄 수 있어요.',
+    hint2: '나이트로 d7의 퀸을 잡으면 뒤에 있던 룩이 체크를 해요.',
+    explain: '나이트가 e5에서 d7로 퀸을 잡으면, 나이트가 비켜난 자리로 우리 룩이 상대 킹을 바로 체크해요. 이렇게 기물이 움직여서 뒤에 있던 공격이 드러나는 것을 "발견 체크"라고 해요. 퀸을 잡으면서 체크까지 하니 완벽한 한 수예요.'
+  },
+  {
+    id: 'tc-6', cat: 'tactic', mode: 'best', plies: 1,
+    title: '승진해서 체크!',
+    fen: '3k4/1P6/8/8/8/8/8/3K4 w - - 0 1',
+    solutions: ['b7b8q'],
+    hint1: '폰을 끝까지 밀어 보세요.',
+    hint2: 'b8에서 퀸이 되면 바로 체크가 돼요.',
+    explain: '폰을 마지막 줄로 밀어 퀸으로 승진시켜요. b8에서 퀸이 되면 상대 킹에게 바로 체크! 승진은 기물을 하나 더 얻는 것과 같아서, 폰 하나가 대결을 뒤집을 수 있어요. 룩으로 승진하는 것보다 퀸이 훨씬 강해요.'
+  },
+
+  /* ---------------- 2수 체크메이트 ---------------- */
+  {
+    id: 'm2-1', cat: 'mate2', mode: 'mate', plies: 3,
+    title: '룩을 희생하고 퀸으로',
+    fen: '5r1k/6p1/6p1/8/3Q4/8/8/1K3R2 w - - 0 1',
+    solutions: ['f1f8'],
+    hint1: '룩으로 맨 윗줄을 공격해 보세요. 희생이 필요해요.',
+    hint2: 'f1 룩으로 f8을 잡으면 체크! 상대 킹은 h7로 밀려나요.',
+    explain: '룩으로 f8의 룩을 잡으면 체크예요. 상대 킹은 h7로 밀려날 수밖에 없어요. 그때 퀸을 h4로 보내면 대각선과 세로줄이 동시에 막혀서 체크메이트예요. 룩 하나를 내주고 더 큰 메이트를 얻는 계산이에요.'
+  },
+  {
+    id: 'm2-2', cat: 'mate2', mode: 'mate', plies: 3,
+    title: '퀸 체크, 비숍 마무리',
+    fen: 'k7/8/8/5Q2/8/8/1B6/1K6 w - - 0 1',
+    solutions: ['f5c8'],
+    hint1: '퀸으로 체크해서 상대 킹을 몰아 보세요.',
+    hint2: 'c8에서 체크하면 킹은 a7으로 갈 수밖에 없어요.',
+    explain: '퀸으로 c8에서 체크하면 상대 킹은 a7으로 갈 수밖에 없어요. 그때 비숍을 d4로 올리면 대각선이 상대 킹까지 이어져서 체크메이트! 퀸이 몰고 비숍이 마무리하는 짝꿍 플레이예요.'
+  },
+  {
+    id: 'm2-3', cat: 'mate2', mode: 'mate', plies: 3,
+    title: '조용한 대기수',
+    fen: '6k1/6p1/3Q4/8/8/8/1B6/1K6 w - - 0 1',
+    solutions: ['d6e7'],
+    hint1: '체크가 아니어도 좋아요. 상대를 먼저 움직이게 해 보세요.',
+    hint2: '퀸을 e7로 보내면 상대가 무엇을 두든 g7이 무너져요.',
+    explain: '체크가 아니라 조용히 퀸을 e7로 보내는 수예요. 그러면 상대는 킹이나 폰을 움직여야 하는데, 어떤 수를 둬도 퀸이 g7로 들어가 체크메이트가 돼요. 이렇게 상대를 먼저 움직이게 만드는 수를 "대기수"라고 해요.'
+  },
+  {
+    id: 'm2-4', cat: 'mate2', mode: 'mate', plies: 3,
+    title: '룩으로 7번째 줄 막기',
+    fen: 'k7/4n1p1/3Q3p/8/8/8/8/K3R3 w - - 0 1',
+    solutions: ['e1e7'],
+    hint1: '룩으로 7번째 줄을 차지해 보세요.',
+    hint2: 'e7의 나이트를 잡으면 룩이 7번째 줄을 막아요.',
+    explain: '룩으로 e7의 나이트를 잡아요. 나이트를 잡은 것도 이득이지만, 더 중요한 건 룩이 7번째 줄에 서서 상대 킹의 도망 칸(a7)을 막은 거예요. 그러면 다음 수에 퀸이 d8로 들어가 체크메이트! 상대가 무엇을 두든 마찬가지예요.'
+  },
+  {
+    id: 'm2-5', cat: 'mate2', mode: 'mate', plies: 3,
+    title: '잡으면서 체크',
+    fen: '6k1/8/3Q2np/8/8/8/8/K3R3 w - - 0 1',
+    solutions: ['d6g6'],
+    hint1: '퀸으로 나이트를 잡으면서 체크할 수 있어요.',
+    hint2: 'g6의 나이트를 잡으면 상대 킹은 h8이나 f8로 밀려나요.',
+    explain: '퀸으로 g6의 나이트를 잡으면서 체크! 상대 킹은 h8이나 f8로 갈 수밖에 없어요. 그때 룩을 e8로 보내면 맨 윗줄이 막혀서 체크메이트예요. 하나를 잡으면서 체크까지 하면 두 번 이득을 보는 셈이에요.'
+  }
+];
+
+</script>
+<script>
+/* ============================================================
+   체스 학교 — app logic
+   ============================================================ */
+(function () {
+  'use strict';
+  var C = window.CHESS, PZ = window.PUZZLES;
+  function $(s, r) { return (r || document).querySelector(s); }
+  function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  var FILES = 'abcdefgh';
+
+  /* ---------------- storage ---------------- */
+  var KEY = 'chessKids.v1';
+  var store = { solved: {}, stars: {}, theme: 'green', npc: { diff: 'normal', color: 'w' } };
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) {
+      var o = JSON.parse(raw);
+      if (o && typeof o === 'object') {
+        store.solved = o.solved || {};
+        store.stars = o.stars || {};
+        if (o.theme) store.theme = o.theme;
+        if (o.npc) store.npc = { diff: o.npc.diff || 'normal', color: o.npc.color || 'w' };
+      }
+    }
+  } catch (e) { }
+  function saveStore() {
+    try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) { }
+  }
+
+  /* ---------------- pieces (inline SVG) ---------------- */
+  var SHAPES = {
+    p: '<circle cx="50" cy="30" r="13"/><path d="M37 68c0-12 6-16 7-26h12c1 10 7 14 7 26z"/><rect x="26" y="68" width="48" height="11" rx="5"/>',
+    r: '<path d="M27 24h10v10h8V24h10v10h8V24h10v20l-6 6v24l6 6v6H27v-6l6-6V50l-6-6z"/>',
+    n: '<path d="M66 10C56 15 47 22 43 31L33 36C28 39 29 46 35 48C39 49 43 47 45 50C41 57 38 66 39 75L39 84L74 84C77 62 77 36 66 10Z"/><circle class="eye" cx="47" cy="36" r="2.6"/>',
+    b: '<path d="M50 11c2 4 5 6 5 9 0 3-2 6-5 6s-5-3-5-6c0-3 3-5 5-9z"/><path d="M50 25c9 8 17 18 17 27 0 9-8 14-17 14s-17-5-17-14c0-9 8-19 17-27z"/><path class="cut" d="M50 42v13M44 48h12" fill="none"/><rect x="40" y="62" width="20" height="7" rx="3.5"/><rect x="26" y="70" width="48" height="10" rx="5"/>',
+    q: '<path d="M24 32l6 26h40l6-26-12 12-9-18-9 18-9-18-9 18z"/><circle cx="24" cy="26" r="4.6"/><circle cx="38" cy="19" r="4.6"/><circle cx="50" cy="15" r="5"/><circle cx="62" cy="19" r="4.6"/><circle cx="76" cy="26" r="4.6"/><rect x="28" y="58" width="44" height="7" rx="3.5"/><rect x="24" y="68" width="52" height="11" rx="5"/>',
+    k: '<path class="cut" d="M50 8v13M44 13h12" fill="none" stroke-width="5"/><path d="M33 34l5 25h24l5-25-11 12-6-17-6 17z"/><rect x="32" y="59" width="36" height="7" rx="3.5"/><rect x="24" y="68" width="52" height="11" rx="5"/>'
+  };
+  function pieceSVG(p) {
+    if (!p) return '';
+    var white = p === p.toUpperCase();
+    var t = p.toLowerCase();
+    // white: cream body with a dark outline · black: solid dark silhouette with light emblems
+    var fill = white ? '#fffaf0' : '#221f1b';
+    var stroke = white ? '#3a3026' : '#221f1b';
+    var deco = white ? '#3a3026' : '#f2e6cf';
+    return '<svg class="piece" viewBox="0 0 100 100" aria-hidden="true">' +
+      '<g fill="' + fill + '" stroke="' + stroke + '" stroke-width="3.2" stroke-linejoin="round" ' +
+      'stroke-linecap="round" style="color:' + deco + '">' + SHAPES[t] + '</g></svg>';
+  }
+  // the eye / cut lines need the outline colour
+  var styleTag = document.createElement('style');
+  styleTag.textContent = '.piece .eye{fill:currentColor;stroke:none}.piece .cut{stroke:currentColor;stroke-width:3.2}';
+  document.head.appendChild(styleTag);
+
+  /* ---------------- board renderer ---------------- */
+  function Board(el) {
+    this.el = el;
+    this.squares = [];
+    el.classList.add('grid8');
+    el.innerHTML = '';
+    var frag = document.createDocumentFragment();
+    for (var k = 0; k < 64; k++) {
+      var d = document.createElement('div');
+      d.className = 'sq';
+      d.dataset.k = k;
+      d.setAttribute('role', 'button');
+      this.squares.push(d);
+      frag.appendChild(d);
+    }
+    el.appendChild(frag);
+    var layer = document.createElement('div');
+    layer.className = 'arrowLayer';
+    layer.innerHTML = '<svg viewBox="0 0 100 100" preserveAspectRatio="none"></svg>';
+    el.appendChild(layer);
+    this.layer = layer;
+    var self = this;
+    el.addEventListener('click', function (ev) {
+      var t = ev.target.closest ? ev.target.closest('.sq') : null;
+      if (t && self.onClick) self.onClick(parseInt(t.dataset.k, 10));
+    });
+  }
+  Board.prototype.setTheme = function (theme) {
+    this.el.className = 'board grid8 ' + theme;
+  };
+  Board.prototype.render = function (state, o) {
+    o = o || {};
+    var flip = !!o.flipped;
+    var targets = o.targets || {};
+    var selected = o.selected;
+    var last = o.last;
+    var checkSq = o.check;
+    var hint = o.hint;
+    for (var k = 0; k < 64; k++) {
+      var sq = this.squares[k];
+      var disp = flip ? 63 - k : k;
+      sq.style.order = disp;
+      var row = disp >> 3, col = disp & 7;
+      var dark = (row + col) % 2 === 1;
+      var cls = 'sq ' + (dark ? 'dark' : 'light');
+      if (selected === k) cls += ' sel';
+      if (last && (last.from === k || last.to === k)) cls += ' last';
+      if (checkSq === k) cls += ' check';
+      if (hint && hint.from === k) cls += ' hintFrom';
+      if (hint && hint.to === k) cls += ' hintTo';
+      if (targets[k]) cls += ' legal' + (targets[k] === 'cap' ? ' cap' : '');
+      sq.className = cls;
+      var p = state.b[k];
+      sq.setAttribute('aria-label', (FILES[k & 7] + (8 - (k >> 3))) + (p ? ' ' + ko(p) : ' 빈 칸'));
+      var html = pieceSVG(p);
+      if (sq.dataset.p !== (p || '')) { sq.innerHTML = html; sq.dataset.p = p || ''; }
+      else if (!p && sq.innerHTML) { sq.innerHTML = ''; sq.dataset.p = ''; }
+      // dots on top of pieces
+      var dot = sq.querySelector('.dot');
+      if (targets[k]) {
+        if (!dot) { dot = document.createElement('i'); dot.className = 'dot'; sq.appendChild(dot); }
+      } else if (dot) { dot.remove(); }
+      // coordinates
+      var cf = sq.querySelector('.coord.f'), cr = sq.querySelector('.coord.r');
+      if (row === 7) {
+        if (!cf) { cf = document.createElement('span'); cf.className = 'coord f'; sq.appendChild(cf); }
+        cf.textContent = FILES[k & 7];
+      } else if (cf) cf.remove();
+      if (col === 0) {
+        if (!cr) { cr = document.createElement('span'); cr.className = 'coord r'; sq.appendChild(cr); }
+        cr.textContent = String(8 - (k >> 3));
+      } else if (cr) cr.remove();
+    }
+    this.drawArrow(o.arrow, flip);
+  };
+  Board.prototype.center = function (k, flip) {
+    var disp = flip ? 63 - k : k;
+    return { x: (disp & 7) * 12.5 + 6.25, y: (disp >> 3) * 12.5 + 6.25 };
+  };
+  Board.prototype.drawArrow = function (arrow, flip) {
+    var svg = this.layer.firstChild;
+    if (!arrow) { svg.innerHTML = ''; return; }
+    var a = this.center(arrow.from, flip), b = this.center(arrow.to, flip);
+    var dx = b.x - a.x, dy = b.y - a.y, len = Math.sqrt(dx * dx + dy * dy) || 1;
+    var ux = dx / len, uy = dy / len;
+    var sx = a.x + ux * 4.2, sy = a.y + uy * 4.2;
+    var ex = b.x - ux * 4.6, ey = b.y - uy * 4.6;
+    var px = -uy, py = ux, hs = 3.1;
+    var color = arrow.color || '#2f6b4f';
+    svg.innerHTML =
+      '<line x1="' + sx + '" y1="' + sy + '" x2="' + ex + '" y2="' + ey + '" stroke="' + color +
+      '" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/>' +
+      '<polygon points="' + (ex + ux * 3.4) + ',' + (ey + uy * 3.4) + ' ' +
+      (ex + px * hs) + ',' + (ey + py * hs) + ' ' + (ex - px * hs) + ',' + (ey - py * hs) +
+      '" fill="' + color + '" opacity="0.9"/>';
+  };
+
+  /* ---------------- shared helpers ---------------- */
+  function legalMap(state) {
+    var map = {};
+    var mv = C.genLegal(state);
+    for (var i = 0; i < mv.length; i++) {
+      if (!map[mv[i].from]) map[mv[i].from] = [];
+      map[mv[i].from].push(mv[i]);
+    }
+    return map;
+  }
+  function targetsOf(list) {
+    var t = {};
+    for (var i = 0; i < list.length; i++) t[list[i].to] = list[i].capture ? 'cap' : 'go';
+    return t;
+  }
+  function ko(p) { return C.PIECE_KO[C.typeOf(p)] || '기물'; }
+  // Korean particles depend on whether the last syllable has a final consonant (받침)
+  function josa(word, withFinal, withoutFinal) {
+    var ch = word.charAt(word.length - 1);
+    var code = ch.charCodeAt(0);
+    var hasFinal = false;
+    if (code >= 0xAC00 && code <= 0xD7A3) hasFinal = ((code - 0xAC00) % 28) !== 0;
+    return word + (hasFinal ? withFinal : withoutFinal);
+  }
+  function eul(word) { return josa(word, '을', '를'); }
+  function i(word) { return josa(word, '이', '가'); }
+  function attackedEnemies(state, from) {
+    // pieces (other than pawns) that the piece standing on `from` attacks
+    var b = state.b.slice();
+    var mine = b[from];
+    var white = C.isWhitePiece(mine);
+    for (var i = 0; i < 64; i++) {
+      if (i === from) continue;
+      var p = b[i];
+      if (!p) continue;
+      var sameSide = C.isWhitePiece(p) === white;
+      if (sameSide) b[i] = '';           // hide our other pieces so lines are clear
+    }
+    var tmp = { b: b, t: white ? 'w' : 'b', cast: 0, ep: null, half: 0, full: 1 };
+    var moves = C.genPseudo(tmp), out = [];
+    for (var j = 0; j < moves.length; j++) {
+      if (moves[j].from !== from) continue;
+      var tgt = state.b[moves[j].to];
+      if (tgt && C.isWhitePiece(tgt) !== white) out.push({ sq: moves[j].to, piece: tgt });
+    }
+    return out;
+  }
+  function checkSquare(state) {
+    if (!C.inCheck(state, state.t)) return null;
+    return C.kingSquare(state.b, state.t);
+  }
+
+  /* ---------------- puzzle view ---------------- */
+  var pBoard = new Board($('#pBoard'));
+  pBoard.el.addEventListener('click', function () { });
+  var puz = {
+    cat: 'all', idx: 0, list: [], state: null, puzzle: null,
+    selected: null, hint: null, hints: 0, solvedNow: false,
+    finished: false, last: null, pendingPromo: null, busy: false,
+    movesPlayed: 0, explanationShown: false
+  };
+
+  function filteredList() {
+    if (puz.cat === 'all') return PZ.slice();
+    return PZ.filter(function (p) { return p.cat === puz.cat; });
+  }
+  function puzzleDone(p) { return !!store.solved[p.id]; }
+
+  function loadPuzzle(list, idx) {
+    puz.list = list || filteredList();
+    if (!puz.list.length) { puz.list = PZ.slice(); }
+    puz.idx = Math.max(0, Math.min((idx == null ? 0 : idx), puz.list.length - 1));
+    puz.puzzle = puz.list[puz.idx];
+    puz.state = C.parseFEN(puz.puzzle.fen);
+    puz.selected = null;
+    puz.hint = null;
+    puz.hints = 0;
+    puz.solvedNow = false;
+    puz.finished = false;
+    puz.last = null;
+    puz.busy = false;
+    puz.movesPlayed = 0;
+    puz.explanationShown = false;
+    C.clearMateCache();
+    $('#pFeedback').className = 'feedback';
+    $('#pFeedback').innerHTML = introText(puz.puzzle);
+    $('#pTitle').textContent = puz.puzzle.title;
+    $('#pNum').textContent = (puz.idx + 1) + ' / ' + puz.list.length;
+    $('#pNext').textContent = puz.idx + 1 >= puz.list.length ? '처음 문제로' : '다음 문제 →';
+    $('#pHint').disabled = false;
+    setPuzzleTurn('mine');
+    updateTips(puz.puzzle.cat);
+    renderPuzzle();
+    updateProgress();
+  }
+
+  function introText(p) {
+    if (p.mode === 'mate') {
+      return p.plies === 1
+        ? '한 번에 끝내 보세요! <b>체크메이트</b>가 되는 수를 찾아보세요.'
+        : '두 수 안에 끝내는 문제예요. 먼저 <b>가장 좋은 수</b>를 찾아보세요.';
+    }
+    return '가장 좋은 수를 찾아보세요. 상대 기물을 잡거나 결정적인 공격을 할 수 있어요.';
+  }
+
+  var TIPS = {
+    mate1: [
+      '<b>체크메이트</b>는 두 가지가 함께여야 해요. ① 킹을 공격하고 ② 킹이 도망갈 칸이 하나도 없어야 해요.',
+      '킹 주변의 빈 칸을 하나씩 지워 보면 마지막 한 수가 보여요.',
+      '내 기물이 지켜주고 있으면, 킹 바로 옆 칸에 가도 무섭지 않아요.'
+    ],
+    endgame: [
+      '상대 킹을 <b>가장자리·구석</b>으로 몰아넣는 것이 먼저예요. 가운데에서는 절대 못 끝내요.',
+      '킹이 다가가 길을 막고, 룩은 <b>멀리서</b> 줄을 막아요. 룩을 너무 가까이 보내면 잡혀요.',
+      '폰이 마지막 줄에 닿으면 퀸으로 승진해요. 승진은 대결을 끝내는 가장 큰 무기예요.'
+    ],
+    tactic: [
+      '<b>포크</b>: 나이트가 킹과 다른 기물을 동시에 노리면, 하나는 반드시 잡을 수 있어요.',
+      '<b>핀</b>: 킹과 같은 줄에 있는 기물은 움직이면 안 되니, 그냥 잡을 수 있어요.',
+      '서로 노리고 있을 때는 <b>먼저 잡는 쪽</b>이 이겨요.'
+    ],
+    mate2: [
+      '첫 수는 <b>체크</b>나 <b>희생</b>으로 상대를 몰아붙여요. 그래야 둘째 수에서 끝낼 수 있어요.',
+      '상대가 <b>무엇을 두든</b> 메이트가 되는지 확인해야 진짜 정답이에요.',
+      '체크가 아니어도 상대를 먼저 움직이게 하는 <b>대기수</b>가 정답일 때도 있어요.'
+    ]
+  };
+  function updateTips(cat) {
+    var host = $('#pTips');
+    if (!host) return;
+    var list = TIPS[cat] || TIPS.mate1;
+    host.innerHTML = list.map(function (t) { return '<li>' + t + '</li>'; }).join('');
+  }
+
+  function setPuzzleTurn(who) {
+    var dot = $('#pTurnDot'), txt = $('#pTurn');
+    if (who === 'mine') { dot.className = 'turnDot mine'; txt.textContent = '내 차례예요'; }
+    else if (who === 'npc') { dot.className = 'turnDot'; txt.textContent = '상대가 두는 중…'; }
+    else { dot.className = 'turnDot'; txt.textContent = '문제 끝!'; }
+    var th = $('#pThinking');
+    if (th) th.classList.toggle('on', who === 'npc');
+  }
+
+  function renderPuzzle(extra) {
+    var targets = {};
+    if (puz.selected !== null && !puz.finished && !puz.busy) {
+      var list = (legalMap(puz.state)[puz.selected] || []);
+      targets = targetsOf(list);
+    }
+    pBoard.render(puz.state, {
+      selected: puz.selected, targets: targets, last: puz.last,
+      check: checkSquare(puz.state), hint: puz.hint,
+      arrow: (extra && extra.arrow) || (puz.hint ? { from: puz.hint.from, to: puz.hint.to, color: '#c98a1e' } : null)
+    });
+  }
+
+  function allowedKeys() {
+    if (!puz.puzzle) return [];
+    if (puz.puzzle.mode === 'mate') {
+      return C.matingMoves(puz.state, 5).moves.map(function (m) { return C.toMoveKey(m); });
+    }
+    if (puz.movesPlayed === 0) return puz.puzzle.solutions.slice();
+    return [];
+  }
+
+  function onPuzzleSquare(k) {
+    if (!puz.state || puz.finished || puz.busy) return;
+    var p = puz.state.b[k];
+    if (p && C.isWhitePiece(p) === (puz.state.t === 'w') && puz.state.t === 'w') {
+      if (puz.selected === k) { puz.selected = null; renderPuzzle(); return; }
+      puz.selected = k;
+      puz.hint = null;
+      renderPuzzle();
+      return;
+    }
+    if (puz.selected !== null) {
+      var list = (legalMap(puz.state)[puz.selected] || []).filter(function (m) { return m.to === k; });
+      if (list.length === 1) { tryPuzzleMove(list[0]); return; }
+      if (list.length > 1 && list[0].promo) { openPromo(list, 'puzzle'); return; }
+      puz.selected = null;
+      renderPuzzle();
+    }
+  }
+
+  function tryPuzzleMove(mv) {
+    var state = puz.state;
+    var key = C.toMoveKey(mv);
+    var allowed = allowedKeys();
+    if (allowed.indexOf(key) < 0) {
+      puz.selected = null;
+      showWrong(state, mv);
+      renderPuzzle({ arrow: { from: mv.from, to: mv.to, color: '#c2563f' } });
+      return;
+    }
+    // correct
+    puz.selected = null;
+    puz.hint = null;
+    var ns = C.makeMove(state, mv);
+    var sanStr = C.san(state, mv);
+    puz.last = { from: mv.from, to: mv.to };
+    puz.state = ns;
+    puz.movesPlayed++;
+    if (C.isCheckmate(ns)) { puzzleSolved(sanStr); renderPuzzle(); return; }
+    if (puz.puzzle.mode === 'best') { puzzleSolved(sanStr); renderPuzzle(); return; }
+    // multi-step: the opponent answers
+    if (puz.puzzle.plies > 1 && puz.movesPlayed < puz.puzzle.plies) {
+      praisePartial();
+      renderPuzzle();
+      puz.busy = true;
+      setPuzzleTurn('npc');
+      setTimeout(function () {
+        var rep = C.bestDefense(puz.state, 5);
+        if (rep) {
+          var sanR = C.san(puz.state, rep);
+          puz.last = { from: rep.from, to: rep.to };
+          puz.state = C.makeMove(puz.state, rep);
+          puz.movesPlayed++;
+        }
+        puz.busy = false;
+        if (C.isCheckmate(puz.state)) { puzzleSolved(''); }
+        else setPuzzleTurn('mine');
+        renderPuzzle();
+      }, 420);
+      return;
+    }
+    puzzleSolved(sanStr);
+    renderPuzzle();
+  }
+
+  function praisePartial() {
+    var fb = $('#pFeedback');
+    fb.className = 'feedback good';
+    fb.innerHTML = '<b>정확해요!</b> 방향이 맞아요. 이제 마지막 한 수로 끝내 볼까요?';
+  }
+
+  function puzzleSolved(lastSan) {
+    puz.finished = true;
+    puz.solvedNow = true;
+    var p = puz.puzzle;
+    var stars = Math.max(1, 3 - puz.hints);
+    var isNew = !store.solved[p.id];
+    store.solved[p.id] = true;
+    store.stars[p.id] = Math.max(store.stars[p.id] || 0, stars);
+    saveStore();
+    var fb = $('#pFeedback');
+    fb.className = 'feedback good';
+    var head = p.mode === 'mate'
+      ? '<b>체크메이트! 🎉</b> 정확한 수예요.' + (lastSan ? ' (' + lastSan + ')' : '')
+      : '<b>정답이에요! 🎉</b> 가장 좋은 수를 찾았어요.' + (lastSan ? ' (' + lastSan + ')' : '');
+    fb.innerHTML = head + '<div class="why">' + p.explain + '</div>';
+    setPuzzleTurn('none');
+    $('#pHint').disabled = true;
+    updateProgress();
+    burst();
+    if (isNew) { /* first time: keep the star pill fresh */ }
+    var nxt = $('#pNext');
+    nxt.classList.add('primary');
+  }
+
+  function showWrong(state, mv) {
+    var fb = $('#pFeedback');
+    fb.className = 'feedback bad';
+    var ns = C.makeMove(state, mv);
+    var moved = state.b[mv.from];
+    if (C.isStalemate(ns)) {
+      fb.innerHTML = '<b>어! 무승부가 됐어요.</b> 상대 킹이 움직일 수 없는데 체크도 아니라서 경기가 비겨요. ' +
+        '마무리할 때는 <b>체크</b>로 끝내야 해요!';
+      return;
+    }
+    if (puz.puzzle && puz.puzzle.mode === 'best') {
+      if (mv.capture) {
+        fb.innerHTML = '<b>기물을 잡았네요!</b> 하지만 그걸로는 충분하지 않아요. 더 큰 이득을 만드는 수가 있어요.';
+      } else {
+        fb.innerHTML = '<b>좋은 생각이에요!</b> 하지만 이 수로는 결정적인 이득을 만들 수 없어요. 다른 수를 찾아볼까요?';
+      }
+      return;
+    }
+    if (C.isCheckmate(ns)) { // shouldn't happen, but be helpful
+      fb.innerHTML = '<b>체크메이트예요!</b>';
+      return;
+    }
+    if (C.inCheck(ns, ns.t)) {
+      var escapes = C.genLegal(ns).filter(function (m) { return C.typeOf(ns.b[m.from]) === 'k'; })
+        .map(function (m) { return C.squareName(m.to); });
+      var esc = escapes.length ? escapes.slice(0, 2).join(', ') + ' 칸' : '어딘가';
+      fb.innerHTML = '<b>체크는 좋은 생각이에요!</b> 그런데 상대 킹이 ' + esc + '으로 도망갈 수 있어요. ' +
+        '킹이 갈 곳을 하나도 남기지 않는 수를 찾아보세요.';
+      return;
+    }
+    if (C.isAttacked(ns.b, mv.to, state.t === 'w' ? 'b' : 'w')) {
+      fb.innerHTML = '<b>조심!</b> 그 칸은 상대 기물이 지키고 있어요. ' + eul(ko(moved)) +
+        ' 그냥 잃을 수도 있어요. 다른 길을 찾아볼까요?';
+      return;
+    }
+    fb.innerHTML = '<b>좋은 시도예요!</b> 하지만 그 수로는 상대 킹이 도망갈 길이 남아 있어요. ' +
+      '킹이 갈 수 있는 칸을 하나씩 지워 보세요.';
+  }
+
+  function puzzleHint() {
+    if (!puz.puzzle || puz.finished) return;
+    var p = puz.puzzle;
+    var fb = $('#pFeedback');
+    puz.hints = Math.min(2, puz.hints + 1);
+    fb.className = 'feedback hint';
+    if (puz.hints === 1) {
+      fb.innerHTML = '<b>💡 힌트 1</b><div class="why">' + p.hint1 + '</div>';
+      puz.hint = null;
+    } else {
+      fb.innerHTML = '<b>💡 힌트 2</b><div class="why">' + p.hint2 + '</div>';
+      var keys = allowedKeys();
+      if (keys.length) {
+        var m = C.fromMoveKey(puz.state, keys[0]);
+        if (m) { puz.hint = { from: m.from, to: m.to }; }
+      }
+    }
+    renderPuzzle();
+  }
+
+  function puzzleReset() {
+    if (!puz.puzzle) return;
+    var i = puz.idx;
+    loadPuzzle(puz.list, i);
+  }
+  function puzzleNext() {
+    var n = puz.idx + 1;
+    if (n >= puz.list.length) n = 0;
+    loadPuzzle(puz.list, n);
+  }
+
+  /* ---------------- promotion modal ---------------- */
+  var promoState = null;
+  function openPromo(list, ctx) {
+    promoState = { list: list, ctx: ctx };
+    var row = $('#promoRow');
+    row.innerHTML = '';
+    ['q', 'r', 'b', 'n'].forEach(function (t) {
+      var b = document.createElement('button');
+      b.className = 'promoBtn';
+      b.innerHTML = pieceSVG(C.isWhitePiece(list[0] ? '' : '') ? '' : (ctx === 'npc' ? (npc.playerColor === 'w' ? 'Q' : 'q') : 'Q')) ;
+      row.appendChild(b);
+    });
+    // rebuild icons properly (promotion piece colour = moving side)
+    var color = ctx === 'npc' ? npc.state.b[list[0].from] : puz.state.b[list[0].from];
+    row.innerHTML = '';
+    ['q', 'r', 'b', 'n'].forEach(function (t) {
+      var b = document.createElement('button');
+      b.className = 'promoBtn';
+      b.innerHTML = pieceSVG(C.isWhitePiece(color) ? t.toUpperCase() : t);
+      b.addEventListener('click', function () { choosePromo(t); });
+      row.appendChild(b);
+    });
+    $('#promoModal').classList.add('on');
+  }
+  function choosePromo(t) {
+    if (!promoState) return;
+    var pick = promoState.list.filter(function (m) { return m.promo === t; })[0];
+    var ctx = promoState.ctx;
+    $('#promoModal').classList.remove('on');
+    promoState = null;
+    if (!pick) return;
+    if (ctx === 'npc') npcPlayMove(pick);
+    else tryPuzzleMove(pick);
+  }
+
+  /* ---------------- progress ---------------- */
+  function updateProgress() {
+    var total = PZ.length, done = 0, stars = 0;
+    for (var i = 0; i < PZ.length; i++) {
+      if (store.solved[PZ[i].id]) { done++; stars += (store.stars[PZ[i].id] || 0); }
+    }
+    $('#barFill').style.width = Math.round(done / total * 100) + '%';
+    $('#progText').textContent = done + ' / ' + total + ' 문제';
+    $('#starTotal').textContent = stars;
+    $('#puzzleTabCount').textContent = done + '/' + total;
+    // per-category stars on the chips
+  }
+
+  /* ---------------- confetti ---------------- */
+  function burst() {
+    var host = $('#burstHost');
+    if (!host) return;
+    host.innerHTML = '';
+    var emoji = ['⭐', '✨', '🎉', '💚', '🏆'];
+    for (var i = 0; i < 14; i++) {
+      var s = document.createElement('i');
+      s.textContent = emoji[i % emoji.length];
+      s.style.left = (20 + Math.random() * 60) + '%';
+      s.style.top = (35 + Math.random() * 20) + '%';
+      s.style.setProperty('--dx', (Math.random() * 220 - 110) + 'px');
+      s.style.setProperty('--dy', (-60 - Math.random() * 120) + 'px');
+      s.style.setProperty('--rot', (Math.random() * 360 - 180) + 'deg');
+      s.style.animationDelay = (Math.random() * 0.15) + 's';
+      host.appendChild(s);
+    }
+    setTimeout(function () { host.innerHTML = ''; }, 1400);
+  }
+
+  /* ---------------- NPC game ---------------- */
+  var nBoard = new Board($('#nBoard'));
+  var npc = {
+    states: [], moves: [], keys: [], state: null, selected: null, last: null,
+    flipped: false, diff: store.npc.diff || 'normal', playerColor: store.npc.color || 'w',
+    over: false, thinking: false, hint: null, captured: { w: [], b: [] }
+  };
+
+  function npcNewGame() {
+    npc.state = C.parseFEN(C.START_FEN);
+    npc.states = [npc.state];
+    npc.moves = [];
+    npc.keys = [C.posKey(npc.state)];
+    npc.selected = null;
+    npc.last = null;
+    npc.over = false;
+    npc.thinking = false;
+    npc.hint = null;
+    npc.captured = { w: [], b: [] };
+    npc.flipped = npc.playerColor === 'b';
+    nBoard.setTheme(store.theme);
+    $('#npcStatus').textContent = '새 대결을 시작했어요!';
+    $('#npcStatus').className = 'feedback';
+    renderNpc();
+    if (npc.state.t !== npc.playerColor) scheduleNpc();
+  }
+
+  function renderNpc() {
+    var targets = {};
+    if (npc.selected !== null && !npc.over && !npc.thinking && npc.state.t === npc.playerColor) {
+      targets = targetsOf(legalMap(npc.state)[npc.selected] || []);
+    }
+    nBoard.render(npc.state, {
+      selected: npc.selected, targets: targets, last: npc.last,
+      check: checkSquare(npc.state), hint: npc.hint, flipped: npc.flipped,
+      arrow: npc.hint ? { from: npc.hint.from, to: npc.hint.to, color: '#2f6b4f' } : null
+    });
+    renderCaptured();
+    renderMoves();
+    var turn = npc.over ? '대결 끝' : (npc.state.t === npc.playerColor ? '내 차례' : 'NPC 차례');
+    $('#npcTurn').textContent = turn;
+    $('#npcTurnDot').className = 'turnDot' + (npc.state.t === npc.playerColor && !npc.over ? ' mine' : '');
+    $('#npcThinking').classList.toggle('on', npc.thinking);
+    $('#npcUndo').disabled = npc.moves.length === 0 || npc.thinking;
+    $('#npcHint').disabled = npc.over || npc.thinking || npc.state.t !== npc.playerColor;
+  }
+
+  function renderCaptured() {
+    var byWhite = npc.captured.w, byBlack = npc.captured.b;
+    $('#capByMe').innerHTML = byWhite.map(function (p) { return pieceSVG(p); }).join('');
+    $('#capByNpc').innerHTML = byBlack.map(function (p) { return pieceSVG(p); }).join('');
+    var val = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
+    var mine = 0, theirs = 0;
+    byWhite.forEach(function (p) { mine += val[C.typeOf(p)] || 0; });
+    byBlack.forEach(function (p) { theirs += val[C.typeOf(p)] || 0; });
+    var d = mine - theirs;
+    var label = d === 0 ? '±0' : (d > 0 ? '+' + d : String(d));
+    $('#matScore').textContent = d === 0 ? '균형' : (npc.playerColor === 'w' ? (d > 0 ? '내가 +' + d : 'NPC가 +' + (-d)) : (d > 0 ? 'NPC가 +' + d : '내가 +' + (-d)));
+  }
+
+  function renderMoves() {
+    var host = $('#npcMoves');
+    if (!npc.moves.length) { host.innerHTML = '<div class="emptyNote">아직 둔 수가 없어요. 기물을 눌러 움직여 보세요.</div>'; return; }
+    var rows = '', i;
+    for (i = 0; i < npc.moves.length; i += 2) {
+      var n = Math.floor(i / 2) + 1;
+      var a = npc.moves[i], b = npc.moves[i + 1];
+      var aCls = 'mv' + (i === npc.moves.length - 1 ? ' last' : '');
+      var bCls = 'mv' + (i + 1 === npc.moves.length - 1 ? ' last' : '');
+      rows += '<span class="n">' + n + '.</span><span class="' + aCls + '">' + (a ? a.san : '') + '</span>' +
+        '<span class="' + bCls + '">' + (b ? b.san : '') + '</span>';
+    }
+    host.innerHTML = rows;
+    host.scrollTop = host.scrollHeight;
+  }
+
+  function npcOnSquare(k) {
+    if (!npc.state || npc.over || npc.thinking || npc.state.t !== npc.playerColor) return;
+    var p = npc.state.b[k];
+    if (p && C.isWhitePiece(p) === (npc.playerColor === 'w')) {
+      if (npc.selected === k) { npc.selected = null; renderNpc(); return; }
+      npc.selected = k; npc.hint = null; renderNpc(); return;
+    }
+    if (npc.selected !== null) {
+      var list = (legalMap(npc.state)[npc.selected] || []).filter(function (m) { return m.to === k; });
+      if (list.length === 1) { npcPlayMove(list[0]); return; }
+      if (list.length > 1 && list[0].promo) { openPromo(list, 'npc'); return; }
+      npc.selected = null; renderNpc();
+    }
+  }
+
+  function npcPlayMove(mv) {
+    var st = npc.state;
+    var sanStr = C.san(st, mv);
+    var cap = mv.capture ? (st.b[mv.to] || (mv.flag === 'ep' ? (st.t === 'w' ? 'p' : 'P') : null)) : null;
+    if (cap) { (st.t === 'w' ? npc.captured.w : npc.captured.b).push(cap); }
+    npc.state = C.makeMove(st, mv);
+    npc.states.push(npc.state);
+    npc.keys.push(C.posKey(npc.state));
+    npc.moves.push({ mv: mv, san: sanStr });
+    npc.last = { from: mv.from, to: mv.to };
+    npc.selected = null;
+    npc.hint = null;
+    var stt = C.status(npc.state, npc.keys);
+    renderNpc();
+    if (stt.over) { npc.over = true; renderNpc(); showGameOver(stt); return; }
+    if (npc.state.t !== npc.playerColor) scheduleNpc();
+  }
+
+  function scheduleNpc() {
+    if (npc.over) return;
+    npc.thinking = true;
+    renderNpc();
+    setTimeout(function () {
+      var mv = pickNpcMove();
+      npc.thinking = false;
+      if (!mv) { renderNpc(); return; }
+      npcPlayMove(mv);
+    }, 260);
+  }
+
+  function pickNpcMove() {
+    var st = npc.state;
+    var legal = C.genLegal(st);
+    if (!legal.length) return null;
+    var cfg = { easy: { depth: 2, timeMs: 120, rand: 0.32 }, normal: { depth: 3, timeMs: 220, rand: 0.10 }, hard: { depth: 4, timeMs: 320, rand: 0.0 } }[npc.diff] || { depth: 3, timeMs: 220, rand: 0.1 };
+    if (Math.random() < cfg.rand) return legal[Math.floor(Math.random() * legal.length)];
+    var res = C.search(st, { depth: cfg.depth, timeMs: cfg.timeMs });
+    if (!res || !res.list.length) return legal[Math.floor(Math.random() * legal.length)];
+    var top = res.list[0].score;
+    var pool = res.list.filter(function (x) { return top - x.score <= (npc.diff === 'easy' ? 120 : 25); });
+    if (!pool.length) pool = [res.list[0]];
+    return pool[Math.floor(Math.random() * pool.length)].move;
+  }
+
+  function npcUndo() {
+    if (npc.thinking || !npc.moves.length) return;
+    var guard = 0;
+    while (npc.moves.length && guard++ < 4) {
+      npc.moves.pop();
+      npc.states.pop();
+      npc.keys.pop();
+      if (npc.states[npc.states.length - 1].t === npc.playerColor) break;
+    }
+    npc.state = npc.states[npc.states.length - 1];
+    npc.over = false;
+    npc.selected = null;
+    npc.hint = null;
+    var lastMove = npc.moves[npc.moves.length - 1];
+    npc.last = lastMove ? { from: lastMove.mv.from, to: lastMove.mv.to } : null;
+    // recompute captured pieces from the move list
+    npc.captured = { w: [], b: [] };
+    var st = npc.states[0];
+    for (var i = 0; i < npc.moves.length; i++) {
+      var mm = npc.moves[i].mv;
+      var cc = mm.capture ? (st.b[mm.to] || (mm.flag === 'ep' ? (st.t === 'w' ? 'p' : 'P') : null)) : null;
+      if (cc) (st.t === 'w' ? npc.captured.w : npc.captured.b).push(cc);
+      st = C.makeMove(st, mm);
+    }
+    $('#npcStatus').className = 'feedback';
+    $('#npcStatus').innerHTML = '한 수를 무뤘어요. 다시 생각해 보세요.';
+    renderNpc();
+  }
+
+  function npcHint() {
+    if (npc.over || npc.thinking || npc.state.t !== npc.playerColor) return;
+    var res = C.search(npc.state, { depth: 4, timeMs: 700 });
+    if (!res || !res.move) return;
+    var mv = res.move;
+    npc.hint = { from: mv.from, to: mv.to };
+    var txt = explainHint(npc.state, mv);
+    var fb = $('#npcStatus');
+    fb.className = 'feedback hint';
+    fb.innerHTML = '<b>💡 추천 수: ' + C.san(npc.state, mv) + '</b><div class="why">' + txt + '</div>';
+    renderNpc();
+  }
+
+  function explainHint(state, mv) {
+    var ns = C.makeMove(state, mv);
+    var p = state.b[mv.from], type = C.typeOf(p), name = ko(p);
+    var to = C.squareName(mv.to);
+    if (C.isCheckmate(ns)) return '체크메이트! ' + eul(name) + ' ' + to + '로 움직이면 상대 킹이 도망갈 곳이 없어요.';
+    if (mv.promo) return '폰을 승진시켜 ' + C.PIECE_KO[mv.promo] + '을(를) 만들어요. 기물이 하나 늘어나는 큰 이득이에요.';
+    if (C.inCheck(ns, ns.t)) return '체크! ' + eul(name) + ' ' + to + '로 보내 상대 킹을 먼저 쫓아가요. 상대는 체크부터 막아야 하니 내가 주도권을 잡아요.';
+    if (mv.flag === 'castleK' || mv.flag === 'castleQ') return '캐슬링! 킹을 구석의 안전한 곳으로 옮기고 룩도 한 번에 꺼내요.';
+    if (mv.capture) {
+      var val = C.VAL[type];
+      var capName = ko(ns.captured || 'p');
+      return '상대 ' + eul(capName) + ' 잡아요. ' + (C.isAttacked(ns.b, mv.to, 'b') ? '되잡힐 수 있으니 다음 수를 잘 보세요.' : '지금은 안전하게 이득을 볼 수 있어요.');
+    }
+    // fork?
+    var atk = attackedEnemies(ns, mv.to).filter(function (a) { return C.VAL[C.typeOf(a.piece)] >= 300; });
+    if (atk.length >= 2) return '이 한 수로 ' + atk.map(function (a) { return C.PIECE_KO[C.typeOf(a.piece)]; }).join('와 ') +
+      ' 두 기물을 동시에 공격해요! 상대는 하나만 지킬 수 있어서 결국 하나를 잃어요.';
+    // does the move attack something valuable?
+    var hits = attackedEnemies(ns, mv.to).filter(function (a) { return C.VAL[C.typeOf(a.piece)] >= 300; });
+    if (hits.length === 1) {
+      var h = hits[0];
+      var wasAttacked2 = C.isAttacked(state.b, mv.from, state.t === 'w' ? 'b' : 'w');
+      return eul(name) + ' ' + to + '로 옮기면서 상대 ' + eul(C.PIECE_KO[C.typeOf(h.piece)]) + ' 공격해요.' + (wasAttacked2 ? ' 공격받던 기물을 안전하게 빼내면서 한 가지를 더 하는 좋은 수예요.' : ' 상대는 이걸 먼저 해결해야 해서 내가 주도권을 잡아요.');
+    }
+    // escaping a threat?
+    var wasAttacked = C.isAttacked(state.b, mv.from, state.t === 'w' ? 'b' : 'w');
+    var nowAttacked = C.isAttacked(ns.b, mv.to, state.t === 'w' ? 'b' : 'w');
+    if (wasAttacked && !nowAttacked) return '공격받던 ' + eul(name) + ' 안전한 ' + to + ' 칸으로 옮겼어요. 기물을 잃지 않는 것도 좋은 수예요.';
+    // castling-ish development
+    if (C.typeOf(p) === 'n' || C.typeOf(p) === 'b') return eul(name) + ' ' + to + '로 꺼내서 더 많은 칸을 지배해요. 기물을 일찍 꺼내면 좋아요.';
+    if (C.typeOf(p) === 'p' && (to === 'e4' || to === 'd4' || to === 'e5' || to === 'd5')) return '중앙 폰을 밀어 중앙을 차지해요. 중앙을 먼저 가져가면 기물이 편하게 움직여요.';
+    return eul(name) + ' ' + to + '로 옮기면 상대의 다음 계획을 막으면서 내 기물이 더 좋은 자리를 차지해요.';
+  }
+
+  function showGameOver(stt) {
+    var title, msg, emoji;
+    if (stt.result === 'draw') {
+      emoji = '🤝';
+      title = '무승부예요';
+      msg = stt.reason === 'stalemate' ? '상대가 움직일 수 없어서 비겼어요. 체크메이트와 무승부는 한 칸 차이예요!'
+        : stt.reason === 'fifty' ? '50수 규칙으로 비겼어요.'
+          : stt.reason === 'repetition' ? '같은 모양이 세 번 나와서 비겼어요.'
+            : '기물이 너무 적어서 비겼어요.';
+    } else if (stt.result === (npc.playerColor === 'w' ? 'white' : 'black')) {
+      emoji = '🏆';
+      title = '이겼어요!';
+      msg = '멋진 마무리예요. 체크메이트를 정확히 만들었어요!';
+    } else {
+      emoji = '😅';
+      title = '아쉬워요, 이번엔 졌어요';
+      msg = '상대가 체크메이트를 만들었어요. 다시 도전해 볼까요?';
+    }
+    $('#overEmoji').textContent = emoji;
+    $('#overTitle').textContent = title;
+    $('#overMsg').textContent = msg;
+    $('#overModal').classList.add('on');
+  }
+
+  /* ---------------- board sizing ---------------- */
+  function layout() {
+    [['#pBoard', '#pBoardSide'], ['#nBoard', '#nBoardSide']].forEach(function (pair) {
+      var board = $(pair[0]), side = $(pair[1]);
+      if (!board || !side || side.offsetParent === null) return;
+      var cs = getComputedStyle(side);
+      var pad = 0;
+      var w = side.clientWidth - pad, h = side.clientHeight - pad;
+      if (w <= 0 || h <= 0) return;
+      var size = Math.floor(Math.min(w, h));
+      if (size < 120) size = Math.min(w, 520);
+      board.style.width = size + 'px';
+      board.style.height = size + 'px';
+    });
+  }
+  window.addEventListener('resize', function () { layout(); });
+  window.addEventListener('orientationchange', function () { setTimeout(layout, 220); });
+
+  /* ---------------- tabs / theme ---------------- */
+  var currentTab = 'puzzle';
+  function setTab(name) {
+    currentTab = name;
+    $$('.tab').forEach(function (b) { b.classList.toggle('on', b.dataset.tab === name); });
+    $('#puzzleView').classList.toggle('hidden', name !== 'puzzle');
+    $('#npcView').classList.toggle('hidden', name !== 'npc');
+    layout();
+    if (name === 'npc' && !npc.state) npcNewGame();
+  }
+  $$('.tab').forEach(function (b) {
+    b.addEventListener('click', function () { setTab(b.dataset.tab); });
+  });
+
+  function applyTheme() {
+    pBoard.setTheme(store.theme);
+    nBoard.setTheme(store.theme);
+  }
+  $('#themeBtn').addEventListener('click', function () {
+    var order = ['green', 'wood', 'cream', 'blue'];
+    var i = order.indexOf(store.theme);
+    store.theme = order[(i + 1) % order.length];
+    saveStore();
+    applyTheme();
+  });
+
+  /* ---------------- wiring: puzzles ---------------- */
+  pBoard.onClick = function (k) { onPuzzleSquare(k); };
+  nBoard.onClick = function (k) { npcOnSquare(k); };
+  $('#pHint').addEventListener('click', puzzleHint);
+  $('#pReset').addEventListener('click', puzzleReset);
+  $('#pNext').addEventListener('click', puzzleNext);
+  $('#pPrev').addEventListener('click', function () {
+    var n = puz.idx - 1; if (n < 0) n = puz.list.length - 1;
+    loadPuzzle(puz.list, n);
+  });
+  $$('#pChips .chip').forEach(function (c) {
+    c.addEventListener('click', function () {
+      $$('#pChips .chip').forEach(function (x) { x.classList.toggle('on', x === c); });
+      puz.cat = c.dataset.cat;
+      var list = filteredList();
+      var firstUnsolved = 0;
+      for (var i = 0; i < list.length; i++) { if (!store.solved[list[i].id]) { firstUnsolved = i; break; } }
+      loadPuzzle(list, firstUnsolved);
+      layout();
+    });
+  });
+
+  /* ---------------- wiring: npc ---------------- */
+  $$('#diffSeg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      npc.diff = b.dataset.v;
+      store.npc.diff = npc.diff; saveStore();
+      $$('#diffSeg button').forEach(function (x) { x.classList.toggle('on', x === b); });
+    });
+  });
+  $$('#colorSeg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (npc.moves.length && !npc.over) {
+        if (!confirm('새 대결을 시작할까요? 지금까지 둔 수는 사라져요.')) return;
+      }
+      npc.playerColor = b.dataset.v;
+      store.npc.color = npc.playerColor; saveStore();
+      $$('#colorSeg button').forEach(function (x) { x.classList.toggle('on', x === b); });
+      npcNewGame();
+    });
+  });
+  $('#npcHint').addEventListener('click', npcHint);
+  $('#npcUndo').addEventListener('click', npcUndo);
+  $('#npcNew').addEventListener('click', npcNewGame);
+  $('#overAgain').addEventListener('click', function () { $('#overModal').classList.remove('on'); npcNewGame(); });
+  $('#overClose').addEventListener('click', function () { $('#overModal').classList.remove('on'); });
+  $('#promoCancel').addEventListener('click', function () { $('#promoModal').classList.remove('on'); promoState = null; });
+
+  /* ---------------- boot ---------------- */
+  function boot() {
+    applyTheme();
+    $$('#diffSeg button').forEach(function (x) { x.classList.toggle('on', x.dataset.v === npc.diff); });
+    $$('#colorSeg button').forEach(function (x) { x.classList.toggle('on', x.dataset.v === npc.playerColor); });
+    var list = filteredList();
+    var firstUnsolved = 0;
+    for (var i = 0; i < list.length; i++) { if (!store.solved[list[i].id]) { firstUnsolved = i; break; } }
+    loadPuzzle(list, firstUnsolved);
+    updateProgress();
+    setTimeout(layout, 30);
+    setTimeout(layout, 240);
+  }
+  // expose a tiny debug surface for automated checks
+  window.__chessKids = {
+    C: C, PZ: PZ, puz: puz, npc: npc, loadPuzzle: loadPuzzle, setTab: setTab, store: store,
+    // used by the automated checks to reach positions that are slow to play by hand (casting, promotion)
+    npcSetFen: function (fen) {
+      npc.state = C.parseFEN(fen);
+      npc.states = [npc.state]; npc.moves = []; npc.keys = [C.posKey(npc.state)];
+      npc.over = false; npc.selected = null; npc.last = null; npc.hint = null;
+      npc.captured = { w: [], b: [] }; npc.thinking = false;
+      npc.flipped = npc.playerColor === 'b';
+      renderNpc();
+    }
+  };
+  boot();
+})();
+
+</script>
+</body>
+</html>

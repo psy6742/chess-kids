@@ -1,0 +1,25 @@
+{
+  "name": "체스 학교 — 마무리와 최적의 수",
+  "short_name": "체스 학교",
+  "description": "어린이용 체스 마무리 학습과 NPC 대결",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5efe1",
+  "theme_color": "#2f6b4f",
+  "lang": "ko",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "assets/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

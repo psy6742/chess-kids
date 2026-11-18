@@ -1,0 +1,11 @@
+# build sources and dev tooling are not part of the deployed site
+build/
+tests/
+__pycache__/
+*.py
+*.pyc
+
+# local artifacts
+screenshots/
+*.png.tmp
+.DS_Store
